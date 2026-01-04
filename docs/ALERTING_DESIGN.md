@@ -39,8 +39,10 @@ src/
     ├── alert_rules.py               # Rule definitions
     ├── notifiers/                   # Notification channels
     │   ├── __init__.py
-    │   ├── sns_notifier.py          # AWS SNS (SMS/Email)
-    │   ├── email_notifier.py        # SMTP Email
+    │   ├── aws_sns_notifier.py      # AWS SNS (SMS/Email)
+    │   ├── azure_notifier.py        # Azure Service Bus/Event Grid
+    │   ├── gcp_pubsub_notifier.py   # Google Cloud Pub/Sub
+    │   ├── email_notifier.py        # SMTP Email (cloud-agnostic)
     │   ├── webhook_notifier.py      # Slack/Discord/Custom
     │   └── base_notifier.py         # Abstract base
     └── alert_storage.py             # Alert history
@@ -68,7 +70,7 @@ config/
         "operator": "less_than",
         "value": 150.0
       },
-      "notifications": ["sns", "email"],
+      "notifications": ["aws_sns", "email"],
       "cooldown_minutes": 60
     },
     {
@@ -82,7 +84,7 @@ config/
           "min_daily_change_pct": 5.0
         }
       },
-      "notifications": ["webhook"],
+      "notifications": ["azure_service_bus", "webhook"],
       "cooldown_minutes": 1440
     },
     {
@@ -96,7 +98,7 @@ config/
         "operator": "less_than",
         "value": 30
       },
-      "notifications": ["email"],
+      "notifications": ["gcp_pubsub", "email"],
       "cooldown_minutes": 360
     }
   ]
@@ -114,14 +116,26 @@ AWS_SNS_TOPIC_ARN=arn:aws:sns:us-east-1:123456789:stock-alerts
 AWS_ACCESS_KEY_ID=your-key
 AWS_SECRET_ACCESS_KEY=your-secret
 
-# Email (SMTP)
+# Azure Service Bus
+AZURE_SERVICE_BUS_CONNECTION_STRING=Endpoint=sb://your-namespace.servicebus.windows.net/...
+AZURE_SERVICE_BUS_QUEUE_NAME=stock-alerts
+# Or Azure Event Grid
+AZURE_EVENT_GRID_TOPIC_ENDPOINT=https://your-topic.region.eventgrid.azure.net/api/events
+AZURE_EVENT_GRID_ACCESS_KEY=your-access-key
+
+# Google Cloud Pub/Sub
+GCP_PROJECT_ID=your-project-id
+GCP_PUBSUB_TOPIC=stock-alerts
+GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account-key.json
+
+# Email (SMTP - Cloud Agnostic)
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=your-email@gmail.com
 SMTP_PASSWORD=your-app-password
 ALERT_EMAIL_TO=recipient@example.com
 
-# Webhook
+# Webhook (Cloud Agnostic)
 WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
 ```
 
@@ -140,10 +154,13 @@ WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
 - [ ] Webhook notifier (generic HTTP POST)
 - [ ] Notification formatting
 
-### Phase 3: AWS Integration (1-2 days)
-- [ ] SNS notifier (SMS/Email)
-- [ ] AWS credentials handling
-- [ ] Error handling and retries
+### Phase 3: Cloud Provider Integration (2-3 days)
+- [ ] AWS SNS notifier (SMS/Email)
+- [ ] Azure Service Bus notifier
+- [ ] Azure Event Grid notifier
+- [ ] Google Cloud Pub/Sub notifier
+- [ ] Cloud credentials handling
+- [ ] Error handling and retries for all providers
 
 ### Phase 4: Advanced Features (3-4 days)
 - [ ] Technical indicators (RSI, MACD)
@@ -172,7 +189,7 @@ python main.py alerts add \
   --name "AAPL Price Drop" \
   --condition "price < 150" \
   --symbol AAPL \
-  --notify sns
+  --notify aws_sns  # or azure_service_bus, gcp_pubsub, email, webhook
 
 # Test alert
 python main.py alerts test alert_1
@@ -187,31 +204,48 @@ python main.py alerts history --days 7
 
 ### Programmatic Usage
 
+**AWS SNS:**
 ```python
-from src.alerts import AlertEngine, PriceThresholdAlert, SNSNotifier
+from src.alerts import AlertEngine, PriceThresholdAlert, AWSSNSNotifier
 
-# Create alert
-alert = PriceThresholdAlert(
-    symbol="AAPL",
-    threshold=150.0,
-    operator="less_than"
-)
-
-# Add notifier
-notifier = SNSNotifier(topic_arn=os.getenv("AWS_SNS_TOPIC_ARN"))
+alert = PriceThresholdAlert(symbol="AAPL", threshold=150.0, operator="less_than")
+notifier = AWSSNSNotifier(topic_arn=os.getenv("AWS_SNS_TOPIC_ARN"))
 alert.add_notifier(notifier)
 
-# Evaluate
 engine = AlertEngine()
 engine.add_alert(alert)
-engine.evaluate(stock_data)  # Checks all alerts
+engine.evaluate(stock_data)
+```
+
+**Azure Service Bus:**
+```python
+from src.alerts import AlertEngine, PriceThresholdAlert, AzureServiceBusNotifier
+
+alert = PriceThresholdAlert(symbol="AAPL", threshold=150.0, operator="less_than")
+notifier = AzureServiceBusNotifier(
+    connection_string=os.getenv("AZURE_SERVICE_BUS_CONNECTION_STRING"),
+    queue_name=os.getenv("AZURE_SERVICE_BUS_QUEUE_NAME")
+)
+alert.add_notifier(notifier)
+```
+
+**Google Cloud Pub/Sub:**
+```python
+from src.alerts import AlertEngine, PriceThresholdAlert, GCPPubSubNotifier
+
+alert = PriceThresholdAlert(symbol="AAPL", threshold=150.0, operator="less_than")
+notifier = GCPPubSubNotifier(
+    project_id=os.getenv("GCP_PROJECT_ID"),
+    topic_name=os.getenv("GCP_PUBSUB_TOPIC")
+)
+alert.add_notifier(notifier)
 ```
 
 ---
 
 ## Notification Examples
 
-### SMS (via AWS SNS)
+### SMS via AWS SNS
 ```
 🚨 Stock Alert: AAPL Price Drop
 
@@ -222,7 +256,37 @@ Change: -2.5% today
 Time: 2026-01-04 14:30:00 UTC
 ```
 
-### Email
+### Azure Service Bus Message
+```json
+{
+  "alertId": "alert_1",
+  "alertName": "AAPL Price Drop",
+  "symbol": "AAPL",
+  "currentPrice": 148.50,
+  "condition": "price < 150.00",
+  "changePercent": -2.5,
+  "timestamp": "2026-01-04T14:30:00Z"
+}
+```
+
+### Google Cloud Pub/Sub Message
+```json
+{
+  "alert_id": "alert_1",
+  "alert_name": "AAPL Price Drop",
+  "symbol": "AAPL",
+  "current_price": 148.50,
+  "condition": "price < 150.00",
+  "change_percent": -2.5,
+  "timestamp": "2026-01-04T14:30:00Z",
+  "attributes": {
+    "alert_type": "price_threshold",
+    "severity": "high"
+  }
+}
+```
+
+### Email (Cloud Agnostic)
 ```
 Subject: 🚨 Stock Alert: High Volume Gainers
 
@@ -318,10 +382,29 @@ def test_full_alert_workflow():
 - Email: $2 per 100,000 emails
 - Very affordable for personal use
 
-### Alternative Free Options
-- SMTP email (Gmail, Outlook)
-- Webhook to free services (Discord, Telegram)
+### Azure Service Bus Pricing (as of 2026)
+- Basic Tier: $0.05 per million operations
+- Standard Tier: $10/month + $0.80 per million operations
+- Premium Tier: Variable based on usage
+- Very cost-effective for moderate usage
+
+### Google Cloud Pub/Sub Pricing (as of 2026)
+- First 10 GB/month: Free
+- Message ingestion: $40 per TB
+- Message delivery: $40 per TB
+- Excellent free tier for personal use
+
+### Cloud-Agnostic Free Options
+- SMTP email (Gmail, Outlook, SendGrid free tier)
+- Webhook to free services (Discord, Telegram, Slack incoming webhooks)
 - Local notifications (desktop/mobile)
+
+### Recommendation
+For personal use, all three cloud providers are affordable:
+- **AWS SNS**: Best for SMS notifications
+- **Azure Service Bus**: Best for complex workflows
+- **GCP Pub/Sub**: Best free tier, great for high volume
+- **SMTP Email**: Best for completely free notifications
 
 ---
 

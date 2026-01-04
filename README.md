@@ -33,7 +33,7 @@ cd stock-exchange-tracker
 ### Step 2: Install
 
 ```bash
-# Create a virtual environment (keeps things tidy)
+# Create a virtual environment
 python -m venv .venv
 
 # Activate it
