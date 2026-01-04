@@ -186,7 +186,7 @@ def test_function_returns_expected_value_when_given_valid_input(self):
   - Screening alerts (pattern-based: "alert when high volume + big gain")
   - Custom conditions (RSI, moving average crossovers)
   - Multiple notification channels:
-    - AWS SNS, Azure Service Bus (SMS, email)
+    - AWS SNS, Azure Service Bus or Event Grid etc. (SMS, email)
     - Email (SMTP)
     - Webhook (Slack, Discord, custom)
     - Push notifications (optional)
