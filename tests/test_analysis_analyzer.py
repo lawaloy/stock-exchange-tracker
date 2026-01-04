@@ -39,13 +39,16 @@ class TestStockAnalyzer(unittest.TestCase):
     
     def test_analyze_returns_dict(self):
         """Test that analyze returns a dictionary."""
-        result = self.analyzer.analyze(self.sample_data)
+        # Convert DataFrame to list of dicts for the actual API
+        data_list = self.sample_data.to_dict('records')
+        result = self.analyzer.analyze_daily_data(data_list)
         
         self.assertIsInstance(result, dict)
     
     def test_analyze_has_top_gainers(self):
         """Test that analysis includes top gainers."""
-        result = self.analyzer.analyze(self.sample_data)
+        data_list = self.sample_data.to_dict('records')
+        result = self.analyzer.analyze_daily_data(data_list)
         
         self.assertIn('top_gainers', result)
         gainers = result['top_gainers']
@@ -56,7 +59,8 @@ class TestStockAnalyzer(unittest.TestCase):
     
     def test_analyze_has_top_losers(self):
         """Test that analysis includes top losers."""
-        result = self.analyzer.analyze(self.sample_data)
+        data_list = self.sample_data.to_dict('records')
+        result = self.analyzer.analyze_daily_data(data_list)
         
         self.assertIn('top_losers', result)
         losers = result['top_losers']
@@ -67,25 +71,30 @@ class TestStockAnalyzer(unittest.TestCase):
     
     def test_analyze_has_statistics(self):
         """Test that analysis includes statistics."""
-        result = self.analyzer.analyze(self.sample_data)
+        data_list = self.sample_data.to_dict('records')
+        result = self.analyzer.analyze_daily_data(data_list)
         
-        self.assertIn('total_stocks', result)
-        self.assertIn('gainers_count', result)
-        self.assertIn('losers_count', result)
-        self.assertIn('avg_change_percent', result)
+        # Check for 'summary' key which contains the statistics
+        self.assertIn('summary', result)
+        summary = result['summary']
         
-        self.assertEqual(result['total_stocks'], 5)
-        self.assertEqual(result['gainers_count'], 4)
-        self.assertEqual(result['losers_count'], 1)
+        self.assertIn('total_stocks', summary)
+        self.assertIn('gainers', summary)
+        self.assertIn('losers', summary)
+        self.assertIn('average_change_percent', summary)
+        
+        self.assertEqual(summary['total_stocks'], 5)
+        self.assertEqual(summary['gainers'], 4)
+        self.assertEqual(summary['losers'], 1)
     
     def test_empty_dataframe(self):
         """Test handling of empty dataframe."""
-        empty_df = pd.DataFrame()
-        result = self.analyzer.analyze(empty_df)
+        empty_data = []
+        result = self.analyzer.analyze_daily_data(empty_data)
         
-        self.assertEqual(result['total_stocks'], 0)
-        self.assertEqual(result['gainers_count'], 0)
-        self.assertEqual(result['losers_count'], 0)
+        # Empty data returns an empty dict
+        self.assertIsInstance(result, dict)
+        self.assertEqual(len(result), 0)
 
 
 if __name__ == '__main__':
