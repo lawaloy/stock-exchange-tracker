@@ -46,7 +46,9 @@ class TestDataStorage(unittest.TestCase):
     
     def test_save_daily_data(self):
         """Test saving daily data to CSV."""
-        self.storage.save_daily_data(self.sample_df)
+        # Convert DataFrame to list of dicts for the actual API
+        data_list = self.sample_df.to_dict('records')
+        self.storage.save_daily_data(data_list)
         
         # Check that file was created
         csv_files = list(Path(self.test_data_dir).glob("daily_data_*.csv"))
@@ -62,9 +64,11 @@ class TestDataStorage(unittest.TestCase):
     
     def test_load_daily_data(self):
         """Test loading daily data from CSV."""
-        self.storage.save_daily_data(self.sample_df)
+        data_list = self.sample_df.to_dict('records')
+        self.storage.save_daily_data(data_list)
         
-        loaded_df = self.storage.load_latest_daily_data()
+        # Use the actual method name: load_daily_data()
+        loaded_df = self.storage.load_daily_data()
         
         self.assertIsInstance(loaded_df, pd.DataFrame)
         self.assertEqual(len(loaded_df), 2)
@@ -74,7 +78,13 @@ class TestDataStorage(unittest.TestCase):
         """Test loading summary from JSON."""
         self.storage.save_summary(self.sample_summary)
         
-        loaded_summary = self.storage.load_latest_summary()
+        # Load the summary file directly since there's no load_latest_summary method
+        summary_path = Path(self.test_data_dir) / f"summary_{date.today().strftime('%Y-%m-%d')}.json"
+        
+        self.assertTrue(summary_path.exists())
+        
+        with open(summary_path, 'r') as f:
+            loaded_summary = json.load(f)
         
         self.assertIsInstance(loaded_summary, dict)
         self.assertEqual(loaded_summary['total_stocks'], 2)
