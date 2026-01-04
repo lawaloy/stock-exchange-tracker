@@ -531,6 +531,7 @@ A: Yes. All data stays on your machine. API keys never leave your environment.
 We welcome contributions! Priority areas:
 
 **High Priority - New Features:**
+
 - **Alert & notification system** (price alerts, screening alerts, SNS/email/webhook)
 - Additional stock exchanges (international markets)
 - More screening filters (technical indicators: RSI, MACD)
@@ -541,6 +542,7 @@ We welcome contributions! Priority areas:
 See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 **Quick Start:**
+
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes with tests

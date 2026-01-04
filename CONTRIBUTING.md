@@ -6,16 +6,21 @@ Thank you for your interest in contributing! This document provides guidelines f
 
 1. **Fork the repository** on GitHub
 2. **Clone your fork** locally:
+
    ```bash
    git clone https://github.com/YOUR_USERNAME/stock-exchange-tracker.git
    cd stock-exchange-tracker
    ```
+
 3. **Create a virtual environment**:
+
    ```bash
    python -m venv .venv
    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
    ```
+
 4. **Install in development mode**:
+
    ```bash
    pip install -e .
    pip install pytest pytest-cov  # For testing
@@ -74,6 +79,7 @@ git commit -m "fix: resolve issue with Y"
 ```
 
 **Commit Message Guidelines:**
+
 - `feat:` - New feature
 - `fix:` - Bug fix
 - `docs:` - Documentation changes
@@ -88,13 +94,14 @@ git push origin feature/your-feature-name
 ```
 
 Then create a Pull Request on GitHub with:
+
 - Clear description of changes
 - Reference to any related issues
 - Screenshots (if UI changes)
 
 ## Code Structure
 
-```
+```text
 src/
 ├── core/          # Core utilities (config, logging)
 ├── services/      # External data services (API, fetchers)
@@ -179,7 +186,7 @@ def test_function_returns_expected_value_when_given_valid_input(self):
   - Screening alerts (pattern-based: "alert when high volume + big gain")
   - Custom conditions (RSI, moving average crossovers)
   - Multiple notification channels:
-    - AWS SNS (SMS, email)
+    - AWS SNS, Azure Service Bus (SMS, email)
     - Email (SMTP)
     - Webhook (Slack, Discord, custom)
     - Push notifications (optional)
@@ -231,4 +238,3 @@ When reporting issues, please include:
 By contributing, you agree that your contributions will be licensed under the MIT License.
 
 Thank you for contributing! 🚀
-
