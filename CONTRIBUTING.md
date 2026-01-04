@@ -174,13 +174,24 @@ def test_function_returns_expected_value_when_given_valid_input(self):
 
 ### High Priority - New Features
 
-- [ ] **Support for additional stock exchanges** (international markets)
-- [ ] **More screening filters** (RSI, moving averages, custom indicators)
-- [ ] **Enhanced AI summaries** (sentiment analysis, news integration)
-- [ ] **Data visualization features** (charts, graphs, trends)
-- [ ] **Historical data analysis** (backtesting, trend analysis)
-- [ ] **Alert system** (price alerts, notification system)
-- [ ] **Web dashboard** (interactive UI for viewing results)
+- [ ] **Alert & Notification System** (CRITICAL FOR BUYING DECISIONS)
+  - Price alerts (threshold-based: "alert me when AAPL < $150")
+  - Screening alerts (pattern-based: "alert when high volume + big gain")
+  - Custom conditions (RSI, moving average crossovers)
+  - Multiple notification channels:
+    - AWS SNS (SMS, email)
+    - Email (SMTP)
+    - Webhook (Slack, Discord, custom)
+    - Push notifications (optional)
+  - Alert history and management
+  - Configurable alert rules in JSON/YAML
+
+- [ ] **Support for additional stock exchanges** (international markets: LSE, TSE, HKEX)
+- [ ] **More screening filters** (technical indicators: RSI, MACD, Bollinger Bands, moving averages)
+- [ ] **Enhanced AI summaries** (sentiment analysis, news integration, buy/sell recommendations)
+- [ ] **Data visualization features** (charts, graphs, trends, heatmaps)
+- [ ] **Historical data analysis** (backtesting strategies, trend analysis, performance metrics)
+- [ ] **Web dashboard** (interactive UI for viewing results and managing alerts)
 
 ### Medium Priority - Improvements
 
