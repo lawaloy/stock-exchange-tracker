@@ -7,21 +7,24 @@ A flexible alerting system to notify users when stocks meet specific conditions,
 ## Use Cases
 
 ### 1. Price-Based Alerts
-```
+
+```text
 "Alert me when AAPL drops below $150"
 "Alert me when TSLA reaches $200"
 "Alert me when any S&P 500 stock drops >5% in a day"
 ```
 
 ### 2. Screening-Based Alerts
-```
+
+```text
 "Alert me when high volume stocks gain >5%"
 "Alert me when a stock meets my screening criteria for the first time"
 "Alert me when RSI < 30 (oversold)"
 ```
 
 ### 3. Pattern-Based Alerts
-```
+
+```text
 "Alert me when 50-day MA crosses above 200-day MA (golden cross)"
 "Alert me when a stock breaks out of 52-week high"
 "Alert me when volume is 3x average"
@@ -31,7 +34,7 @@ A flexible alerting system to notify users when stocks meet specific conditions,
 
 ## Architecture
 
-```
+```text
 src/
 └── alerts/                          # New module
     ├── __init__.py
@@ -144,17 +147,20 @@ WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
 ## Implementation Plan
 
 ### Phase 1: Core Alert Engine (2-3 days)
+
 - [ ] Alert rule parser
 - [ ] Condition evaluator
 - [ ] Alert storage (history)
 - [ ] Cooldown mechanism
 
 ### Phase 2: Basic Notifications (1-2 days)
+
 - [ ] Email notifier (SMTP)
 - [ ] Webhook notifier (generic HTTP POST)
 - [ ] Notification formatting
 
 ### Phase 3: Cloud Provider Integration (2-3 days)
+
 - [ ] AWS SNS notifier (SMS/Email)
 - [ ] Azure Service Bus notifier
 - [ ] Azure Event Grid notifier
@@ -163,12 +169,14 @@ WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
 - [ ] Error handling and retries for all providers
 
 ### Phase 4: Advanced Features (3-4 days)
+
 - [ ] Technical indicators (RSI, MACD)
 - [ ] Pattern detection
 - [ ] Multi-condition alerts (AND/OR logic)
 - [ ] Alert templates
 
 ### Phase 5: UI/UX (2-3 days)
+
 - [ ] CLI for managing alerts
 - [ ] Alert testing/dry-run mode
 - [ ] Alert history viewer
@@ -205,6 +213,7 @@ python main.py alerts history --days 7
 ### Programmatic Usage
 
 **AWS SNS:**
+
 ```python
 from src.alerts import AlertEngine, PriceThresholdAlert, AWSSNSNotifier
 
@@ -218,6 +227,7 @@ engine.evaluate(stock_data)
 ```
 
 **Azure Service Bus:**
+
 ```python
 from src.alerts import AlertEngine, PriceThresholdAlert, AzureServiceBusNotifier
 
@@ -230,6 +240,7 @@ alert.add_notifier(notifier)
 ```
 
 **Google Cloud Pub/Sub:**
+
 ```python
 from src.alerts import AlertEngine, PriceThresholdAlert, GCPPubSubNotifier
 
@@ -246,7 +257,8 @@ alert.add_notifier(notifier)
 ## Notification Examples
 
 ### SMS via AWS SNS
-```
+
+```text
 🚨 Stock Alert: AAPL Price Drop
 
 Apple Inc (AAPL) is now $148.50
@@ -257,6 +269,7 @@ Time: 2026-01-04 14:30:00 UTC
 ```
 
 ### Azure Service Bus Message
+
 ```json
 {
   "alertId": "alert_1",
@@ -270,6 +283,7 @@ Time: 2026-01-04 14:30:00 UTC
 ```
 
 ### Google Cloud Pub/Sub Message
+
 ```json
 {
   "alert_id": "alert_1",
@@ -287,7 +301,8 @@ Time: 2026-01-04 14:30:00 UTC
 ```
 
 ### Email (Cloud Agnostic)
-```
+
+```text
 Subject: 🚨 Stock Alert: High Volume Gainers
 
 You have 3 stocks matching your "High Volume Gainers" alert:
@@ -301,6 +316,7 @@ Manage alerts: [link to settings]
 ```
 
 ### Slack Webhook
+
 ```json
 {
   "text": "🚨 Stock Alert Triggered",
@@ -321,21 +337,25 @@ Manage alerts: [link to settings]
 ## Technical Considerations
 
 ### Rate Limiting
+
 - Cooldown periods prevent alert spam
 - Per-alert cooldown configuration
 - Global rate limits for notifications
 
 ### Data Requirements
+
 - Real-time or near-real-time data needed
 - May require WebSocket or streaming API
 - Consider API call costs for frequent checks
 
 ### Reliability
+
 - Alert evaluation should be idempotent
 - Retry failed notifications
 - Store alert history for audit
 
 ### Security
+
 - Secure credential storage
 - Encrypted notification channels
 - Alert access control (if multi-user)
@@ -378,29 +398,35 @@ def test_full_alert_workflow():
 ## Cost Considerations
 
 ### AWS SNS Pricing (as of 2026)
+
 - SMS: $0.00645 per message (US)
 - Email: $2 per 100,000 emails
 - Very affordable for personal use
 
 ### Azure Service Bus Pricing (as of 2026)
+
 - Basic Tier: $0.05 per million operations
 - Standard Tier: $10/month + $0.80 per million operations
 - Premium Tier: Variable based on usage
 - Very cost-effective for moderate usage
 
 ### Google Cloud Pub/Sub Pricing (as of 2026)
+
 - First 10 GB/month: Free
 - Message ingestion: $40 per TB
 - Message delivery: $40 per TB
 - Excellent free tier for personal use
 
 ### Cloud-Agnostic Free Options
+
 - SMTP email (Gmail, Outlook, SendGrid free tier)
 - Webhook to free services (Discord, Telegram, Slack incoming webhooks)
 - Local notifications (desktop/mobile)
 
 ### Recommendation
+
 For personal use, all three cloud providers are affordable:
+
 - **AWS SNS**: Best for SMS notifications
 - **Azure Service Bus**: Best for complex workflows
 - **GCP Pub/Sub**: Best free tier, great for high volume
@@ -423,4 +449,3 @@ This feature directly enables the core use case: **making timely buy/sell decisi
 Want to implement this feature? See [CONTRIBUTING.md](../CONTRIBUTING.md) and start with Phase 1!
 
 **Contact**: Open an issue with tag `feature: alerting` to discuss implementation details.
-

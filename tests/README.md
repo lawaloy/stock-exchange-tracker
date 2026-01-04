@@ -6,7 +6,7 @@ This directory contains unit tests for the Stock Exchange Tracker project, organ
 
 ## Test Structure
 
-```
+```txt
 tests/
 ├── __init__.py
 ├── test_core_config.py         # Tests for core/config.py

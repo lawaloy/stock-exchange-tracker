@@ -1,7 +1,7 @@
 """
 Stock Exchange Tracker - Main Entry Point
 
-This is a convenience wrapper that calls the CLI interface.
+This is a convenience wrapper that calls the other interface.
 The actual implementation is in src/cli/commands.py
 """
 
