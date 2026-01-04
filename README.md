@@ -528,11 +528,22 @@ A: Yes. All data stays on your machine. API keys never leave your environment.
 
 ## Contributing
 
-Found a bug? Want a feature?
+We welcome contributions! Priority areas:
 
-1. Open an issue on GitHub
-2. Submit a pull request
-3. Improvements welcome!
+**High Priority - New Features:**
+- Additional stock exchanges (international markets)
+- More screening filters (technical indicators)
+- Enhanced AI summaries (sentiment, news)
+- Data visualization (charts, trends)
+- Historical analysis & backtesting
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+
+**Quick Start:**
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes with tests
+4. Submit a pull request
 
 ---
 

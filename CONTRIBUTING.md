@@ -172,25 +172,28 @@ def test_function_returns_expected_value_when_given_valid_input(self):
 
 ## Areas for Contribution
 
-### High Priority
+### High Priority - New Features
+
+- [ ] **Support for additional stock exchanges** (international markets)
+- [ ] **More screening filters** (RSI, moving averages, custom indicators)
+- [ ] **Enhanced AI summaries** (sentiment analysis, news integration)
+- [ ] **Data visualization features** (charts, graphs, trends)
+- [ ] **Historical data analysis** (backtesting, trend analysis)
+- [ ] **Alert system** (price alerts, notification system)
+- [ ] **Web dashboard** (interactive UI for viewing results)
+
+### Medium Priority - Improvements
 
 - [ ] Additional unit tests (especially for services/)
 - [ ] Integration tests for full workflow
 - [ ] Performance optimizations
-- [ ] Error handling improvements
+- [ ] CLI improvements (progress bars, colors, interactive mode)
 
-### Medium Priority
+### Low Priority - Enhancements
 
-- [ ] Support for additional stock exchanges
-- [ ] More screening filters
-- [ ] Enhanced AI summaries
-- [ ] Data visualization features
-
-### Low Priority
-
-- [ ] CLI improvements (progress bars, colors)
-- [ ] Configuration validation
-- [ ] Additional export formats
+- [ ] Configuration validation with detailed error messages
+- [ ] Additional export formats (Excel, Parquet)
+- [ ] Enhanced error handling and recovery
 
 ## Reporting Issues
 

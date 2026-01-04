@@ -146,14 +146,17 @@ These tests are designed to run in CI/CD pipelines. Example GitHub Actions:
 
 ## TODO
 
-Future test additions:
+**Priority - New Feature Tests:**
+- [ ] Tests for new screening filters (when added)
+- [ ] Tests for additional exchanges (when added)
+- [ ] Tests for visualization module (when added)
+- [ ] Tests for alert system (when added)
 
+**Current - Missing Tests:**
 - [ ] Integration tests for full workflow
 - [ ] Tests for services/data_fetcher.py
 - [ ] Tests for services/stock_screener.py
 - [ ] Tests for services/index_fetcher.py
 - [ ] Tests for analysis/ai_summarizer.py
-- [ ] Tests for cli/stock_tracker.py
 - [ ] Performance tests for API rate limiting
-- [ ] End-to-end smoke tests
 
