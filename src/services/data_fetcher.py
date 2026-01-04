@@ -11,7 +11,9 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from .api_client import FinnhubClient
+from .index_fetcher import IndexFetcher
 from ..core.logger import setup_logger
+from ..core.config import get_indices_to_track
 
 logger = setup_logger("data_fetcher")
 
@@ -75,9 +77,6 @@ class StockDataFetcher:
         Returns:
             Dictionary mapping index names to their stock data
         """
-        from ..core.config import get_indices_to_track
-        from .index_fetcher import IndexFetcher
-        
         indices_to_track = get_indices_to_track()
         all_data = {}
         index_fetcher = IndexFetcher()

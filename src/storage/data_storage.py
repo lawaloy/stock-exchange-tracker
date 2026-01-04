@@ -6,7 +6,8 @@ Handles saving and loading stock market data to/from CSV files.
 
 import pandas as pd
 import os
-from datetime import datetime
+import json
+from datetime import datetime, timedelta
 from typing import List, Dict, Optional
 from pathlib import Path
 
@@ -88,7 +89,6 @@ class DataStorage:
         
         summary_path = self.data_dir / f"summary_{date.strftime('%Y-%m-%d')}.json"
         
-        import json
         summary_data["date"] = str(date)
         with open(summary_path, 'w') as f:
             json.dump(summary_data, f, indent=2)
@@ -107,8 +107,6 @@ class DataStorage:
         Returns:
             Combined DataFrame with historical data
         """
-        from datetime import timedelta
-        
         if end_date is None:
             end_date = datetime.now().date()
         if start_date is None:

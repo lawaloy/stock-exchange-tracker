@@ -12,6 +12,14 @@ import time
 from datetime import datetime, timedelta
 from ..core.logger import setup_logger
 
+# Try to import pytickersymbols package
+try:
+    from pytickersymbols import PyTickerSymbols
+    PYTICKERSYMBOLS_AVAILABLE = True
+except ImportError:
+    PyTickerSymbols = None
+    PYTICKERSYMBOLS_AVAILABLE = False
+
 logger = setup_logger("index_fetcher")
 
 
@@ -31,12 +39,11 @@ class IndexFetcher:
         self.cache_duration = timedelta(days=7)  # Cache for 7 days
         
         # Initialize pytickersymbols package
-        try:
-            from pytickersymbols import PyTickerSymbols
+        if PYTICKERSYMBOLS_AVAILABLE:
             self.ticker_symbols = PyTickerSymbols()
             self.package_available = True
             logger.debug("pytickersymbols package loaded successfully")
-        except ImportError:
+        else:
             self.ticker_symbols = None
             self.package_available = False
             logger.warning("pytickersymbols package not found. Install with: pip install pytickersymbols")

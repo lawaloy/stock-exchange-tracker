@@ -9,6 +9,7 @@ Uses official APIs (no scraping).
 from typing import Dict, List, Optional
 from datetime import datetime
 from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import time
 import json
 from ..core.logger import setup_logger
@@ -199,8 +200,6 @@ class StockScreener:
         logger.info(f"Screening {len(index_symbols)} stocks in parallel ({max_workers} workers)...")
         screened_stocks = []
         completed = 0
-        
-        from concurrent.futures import ThreadPoolExecutor, as_completed
         
         # Use fewer workers to avoid initial burst overwhelming rate limits
         # 60 calls/min = 1 call/sec, so 2 workers is safest for free tier
