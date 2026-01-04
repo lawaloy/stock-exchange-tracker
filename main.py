@@ -1,8 +1,13 @@
 """
 Stock Exchange Tracker - Main Entry Point
 
-This is a convenience wrapper that calls the other interface.
-The actual implementation is in src/cli/commands.py
+This is a convenience wrapper for the CLI interface.
+- CLI presentation: src/cli/commands.py
+- Core workflow logic: src/workflows/tracker.py
+
+You can also run directly:
+  python -m src.cli.commands     # CLI interface
+  python -m src.workflows.tracker  # Direct workflow (programmatic)
 """
 
 import sys

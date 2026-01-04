@@ -251,3 +251,38 @@ class StockTrackerWorkflow:
             logger.error(f"Summary save failed: {str(e)}")
             return {"success": False, "error": str(e)}
 
+
+if __name__ == "__main__":
+    """
+    Direct execution for programmatic/testing use.
+    
+    This runs the workflow and returns structured data without CLI formatting.
+    For CLI output, use: python main.py or python -m src.cli.commands
+    """
+    import json
+    
+    print("Running Stock Tracker Workflow (programmatic mode)...")
+    print("-" * 60)
+    
+    workflow = StockTrackerWorkflow()
+    result = workflow.run(use_screener=True)
+    
+    if result.get("success"):
+        print("\n✓ Workflow completed successfully!")
+        print(f"✓ Data saved: {result.get('data_saved', {}).get('file_path')}")
+        print(f"✓ Summary saved: {result.get('summary_saved', {}).get('file_path')}")
+        
+        # Print structured result (JSON)
+        print("\n" + "=" * 60)
+        print("RESULT (JSON):")
+        print("=" * 60)
+        print(json.dumps({
+            "success": result["success"],
+            "metadata": result["metadata"],
+            "summary": result.get("analysis", {}).get("summary", {}),
+            "ai_summary": result.get("ai_summary", "N/A")[:200] + "..." if result.get("ai_summary") else "N/A"
+        }, indent=2, default=str))
+    else:
+        print(f"\n✗ Workflow failed: {result.get('error')}")
+        exit(1)
+

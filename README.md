@@ -100,6 +100,71 @@ Index Performance:
 
 ---
 
+## Running the Tracker (Multiple Ways)
+
+### Option 1: CLI Interface (Recommended for Daily Use)
+
+```bash
+# Main entry point - formatted console output
+python main.py
+```
+
+This runs the CLI interface which:
+
+- Shows formatted console output
+- Displays top gainers/losers
+- Shows index performance
+- Prints AI summary (if enabled)
+
+### Option 2: Direct CLI Module
+
+```bash
+# Run CLI module directly
+python -m src.cli.commands
+```
+
+Same as Option 1, just a different way to invoke it.
+
+### Option 3: Direct Workflow (Programmatic)
+
+```bash
+# Run workflow without CLI formatting
+python -m src.workflows.tracker
+```
+
+This runs the core workflow and returns structured JSON data. Useful for:
+
+- Testing the workflow logic
+- Integrating into other Python scripts
+- CI/CD pipelines
+- Debugging
+
+### Option 4: Programmatic Import (Python Scripts)
+
+```python
+from src.workflows.tracker import StockTrackerWorkflow
+
+# Run the workflow
+workflow = StockTrackerWorkflow()
+result = workflow.run(use_screener=True)
+
+# Access structured data
+if result["success"]:
+    analysis = result["analysis"]
+    top_gainers = analysis["top_gainers"]
+    ai_summary = result.get("ai_summary")
+    # ... use the data in your application
+```
+
+This is ideal for:
+
+- Building a web API
+- Creating custom dashboards
+- Integrating with other systems
+- Scheduled tasks with custom notifications
+
+---
+
 ## Configuration
 
 ### What Stocks to Track
