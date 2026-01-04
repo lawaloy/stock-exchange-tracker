@@ -87,7 +87,7 @@ class StockDataFetcher:
             
             # Get all symbols from this index
             symbols = index_fetcher.get_index_symbols(index_name)
-            # Cap symbols to first 100 to optimize API call usage
+
             if len(symbols) > 100:
                 logger.info(f"  Capping symbols for {index_name} to first 100 (of {len(symbols)})")
                 symbols = symbols[:100]

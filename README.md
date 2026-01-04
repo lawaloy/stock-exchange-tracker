@@ -376,8 +376,10 @@ stock-exchange-tracker/
 │   │   └── ai_summarizer.py    # AI-powered market summaries
 │   ├── storage/                # Data persistence
 │   │   └── data_storage.py     # Saves CSV/JSON files
-│   └── cli/                    # Command-line interface
-│       └── stock_tracker.py    # Main workflow orchestration
+│   ├── workflows/              # Business logic (reusable)
+│   │   └── tracker.py          # Core workflow orchestration
+│   └── cli/                    # CLI interface (presentation)
+│       └── commands.py         # Command-line interface
 ├── config/
 │   ├── exchanges.json          # Which indices to track
 │   └── filters.json            # Screening criteria
@@ -444,7 +446,7 @@ By default, the tool generates basic market summaries from templates. Want **nat
 **What you get with OpenAI:**
 
 ```text
-Market Summary for 2025-01-04:
+Market Summary for YYYY-MM-DD:
 
 Today's market showed strong momentum with technology stocks leading the charge. 
 The top gainer, Micron Technology (MU), surged 10.51% on strong earnings expectations, 
@@ -457,7 +459,7 @@ However, select technology stocks like Palantir (PLTR) saw profit-taking with a
 **What you get without OpenAI (demo mode):**
 
 ```text
-Market Summary for 2025-01-04:
+Market Summary for YYYY-MM-DD:
 Top gainer: MU +10.51%
 Top loser: PLTR -5.56%
 Overall market: Mixed with 23 gainers and 7 losers
@@ -495,9 +497,9 @@ Want to use a different data provider? Edit `src/api_client.py` to add your prov
 
 ### Run Faster
 
-- **Lower `top_n`**: Currently at 20 for optimal speed. Reduce to 10-15 to save more time
-- **Track fewer indices**: Remove one from `config/exchanges.json` (cuts time in half)
-- **Upgrade API tier**: Paid Finnhub plans allow more calls/minute (currently optimized for free tier)
+- **Lower `top_n`**: Currently at 20.
+- **Track fewer indices**: Remove one from `config/exchanges.json`
+- **Upgrade API tier**: Paid Finnhub plans allow more calls/minute
 
 ### Run Cheaper
 

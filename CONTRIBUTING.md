@@ -107,8 +107,12 @@ src/
 ├── services/      # External data services (API, fetchers)
 ├── analysis/      # Data analysis & AI
 ├── storage/       # Data persistence
-└── cli/           # Command-line interface
+├── workflows/     # Business logic (reusable across interfaces)
+└── cli/           # CLI interface (presentation layer)
 ```
+
+**Key Principle**: Business logic in `workflows/` is reusable.
+CLI/Web/API layers consume workflows for their specific presentation needs.
 
 ## Coding Standards
 
@@ -237,4 +241,4 @@ When reporting issues, please include:
 
 By contributing, you agree that your contributions will be licensed under the MIT License.
 
-Thank you for contributing! 🚀
+Thank you for contributing!

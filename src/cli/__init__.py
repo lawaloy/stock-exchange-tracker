@@ -1,6 +1,5 @@
-"""Command-line interface for stock tracker."""
+"""CLI interface for stock tracker."""
 
-from .stock_tracker import main
+from .commands import main, display_results
 
-__all__ = ["main"]
-
+__all__ = ["main", "display_results"]
