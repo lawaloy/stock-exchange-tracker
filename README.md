@@ -201,7 +201,7 @@ Edit `config/filters.json` to adjust what qualifies as a "good" stock:
 
 ## Production Deployment
 
-### Docker Deployment (Recommended)
+### Docker Deployment
 
 Perfect for scheduled daily runs on any host!
 
@@ -475,21 +475,21 @@ stock-exchange-tracker/
 
 ## Troubleshooting
 
-### "API key required"
+### API key required
 
 - Make sure `.env` file exists with `FINNHUB_API_KEY=your-key`
 - Check the key is correct (40 characters)
 - Restart terminal after creating `.env`
 
-### "Rate limit exceeded (429)"
+### Rate limit exceeded (429)
 
-- Normal! The tool has built-in retry logic
+- The tool has built-in retry logic
 - If it happens frequently:
   - Lower `top_n` in `config/filters.json`
   - Wait 5-10 minutes between runs
   - Consider upgrading to Finnhub paid tier
 
-### "No data fetched"
+### No data fetched
 
 - Check internet connection
 - Verify Finnhub API key is valid
@@ -569,7 +569,7 @@ Want to use a different data provider? Edit `src/api_client.py` to add your prov
 ### Run Cheaper
 
 - Keep free tier (60 calls/min)
-- Run once per day (not multiple times)
+- Run once per day (not multiple times) when the scheduler is enabled
 - Use Docker for efficiency
 
 ---
@@ -583,7 +583,7 @@ A: Yes! Finnhub's free tier is sufficient for daily tracking.
 A: Yes, edit `config/exchanges.json` to add symbols or change indices.
 
 **Q: What if I miss a day?**  
-A: Just run it again. Each run is independent; data is saved with the date.
+A: Just rerun it. Each run is independent; data is saved with the date.
 
 **Q: Can I backtest strategies?**  
 A: This tool focuses on daily snapshots. For backtesting, you'd need historical data (not included).
@@ -652,7 +652,7 @@ This architecture minimizes API calls while maximizing data quality.
 
 ---
 
-## Need Help?
+## Do you need any help?
 
 - Check `logs/stock_tracker_errors_*.log` for error details
 - Review the Troubleshooting section above
