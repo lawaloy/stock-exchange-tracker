@@ -1,0 +1,6 @@
+"""Data storage and persistence."""
+
+from .data_storage import DataStorage
+
+__all__ = ["DataStorage"]
+

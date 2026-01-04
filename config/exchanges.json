@@ -1,0 +1,7 @@
+{
+  "indices_to_track": [
+    "S&P 500",
+    "NASDAQ-100"
+  ],
+  "comment": "List of market indices to track. The screener will automatically find and track the best stocks from these indices."
+}

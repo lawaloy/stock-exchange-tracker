@@ -1,59 +1,579 @@
 # Stock Exchange Tracker
 
-A project to track daily changes in major stock exchanges around the world.
+A daily stock market tracking tool that automatically identifies promising stocks, fetches market data, and generates insights. Perfect for traders, analysts, or anyone interested in tracking market trends.
 
-## Overview
+## What Does It Do?
 
-This project monitors and tracks daily price changes, volume, and other key metrics from major stock exchanges including:
-- NYSE (New York Stock Exchange)
-- NASDAQ
-- London Stock Exchange (LSE)
-- Tokyo Stock Exchange (TSE)
-- Other major global exchanges
+This tool automatically:
 
-## Features
+1. **Screens** major stock indices (S&P 500, NASDAQ-100) to find active, high-volume stocks
+2. **Fetches** real-time market data using official APIs (no scraping!)
+3. **Analyzes** daily changes, identifies top gainers/losers
+4. **Saves** results to CSV files and generates summary reports
+5. **Logs** everything for troubleshooting and monitoring
 
-- Daily data collection from major stock exchanges
-- Historical data tracking
-- Price change analysis
-- Volume monitoring
-- Market trend visualization
+**Run time**: ~4 minutes per day on the free tier
 
-## Getting Started
+---
+
+## Quick Start (Beginners Welcome!)
 
 ### Prerequisites
 
-- Python 3.x (if using Python)
-- API access to stock market data (e.g., Alpha Vantage, Yahoo Finance, or similar)
+- Python 3.12 or higher ([Download here](https://www.python.org/downloads/))
+- A free Finnhub API key ([Sign up here](https://finnhub.io/register) - takes 2 minutes)
 
-### Installation
+### Step 1: Get the Code
 
 ```bash
-# Clone the repository
 git clone https://github.com/lawaloy/stock-exchange-tracker.git
 cd stock-exchange-tracker
-
-# Install dependencies (if applicable)
-# pip install -r requirements.txt
 ```
 
-## Usage
+### Step 2: Install
 
-_Details to be added as the project develops._
+```bash
+# Create a virtual environment (keeps things tidy)
+python -m venv .venv
 
-## Data Sources
+# Activate it
+# Windows PowerShell:
+.venv\Scripts\Activate.ps1
+# Windows CMD:
+.venv\Scripts\activate
+# Mac/Linux:
+source .venv/bin/activate
 
-_To be configured based on preferred data provider._
+# Install the tracker
+pip install -e .
+```
 
-## License
+### Step 3: Add Your API Key
 
-_To be determined._
+Create a file named `.env` in the project folder:
+
+```txt
+FINNHUB_API_KEY=your-api-key-here
+```
+
+*(Get your free key from [finnhub.io/register](https://finnhub.io/register))*
+
+### Step 4: Run It
+
+```bash
+python main.py
+```
+
+That's it! The tool will:
+
+- Screen 201 stocks from major indices
+- Select the top 20 most active stocks
+- Fetch detailed data and analyze trends
+- Save results to `data/daily_data_YYYY-MM-DD.csv`
+
+---
+
+## What You Get
+
+### Output Files
+
+- **`data/daily_data_YYYY-MM-DD.csv`**: Full stock data (prices, volume, changes)
+- **`data/summary_YYYY-MM-DD.json`**: Analysis summary (gainers, losers, statistics)
+- **`logs/stock_tracker_YYYY-MM-DD.log`**: Detailed execution logs
+
+### Console Output
+
+```text
+Top 5 Gainers:
+  1. MU (Micron Technology): +10.51% @ $315.42
+  2. WDC (Western Digital): +8.96% @ $187.70
+  ...
+
+Top 5 Losers:
+  1. PLTR (Palantir): -5.56% @ $167.86
+  ...
+
+Index Performance:
+  S&P 500: Avg Change +1.82% (23 gainers | 7 losers)
+  NASDAQ-100: Avg Change +0.01% (12 gainers | 18 losers)
+```
+
+---
+
+## Configuration
+
+### What Stocks to Track
+
+Edit `config/exchanges.json`:
+
+```json
+{
+  "indices_to_track": [
+    "S&P 500",
+    "NASDAQ-100"
+  ]
+}
+```
+
+### Screening Filters
+
+Edit `config/filters.json` to adjust what qualifies as a "good" stock:
+
+```json
+{
+  "volume_threshold": 1000000,     // Minimum daily volume
+  "price_min": 5.0,                 // Minimum stock price
+  "price_max": 500.0,               // Maximum stock price
+  "min_daily_change_pct": 2.0,      // Minimum % move (filters quiet stocks)
+  "market_cap_min": 1000000000,     // Minimum market cap ($1B)
+  "top_n": 30                       // How many stocks to track
+}
+```
+
+**Tip**: Lower `top_n` to run even faster (currently optimized at 20 for ~4 min runs)
+
+---
+
+## Production Deployment
+
+### Docker Deployment (Recommended)
+
+Perfect for scheduled daily runs on any host!
+
+#### Build the Image
+
+```bash
+cd stock-exchange-tracker
+docker build -t stock-tracker:latest .
+```
+
+#### Run with Environment Variables
+
+##### Option 1: Pass env var directly
+
+```bash
+docker run --rm -e FINNHUB_API_KEY=your-key stock-tracker:latest
+```
+
+##### Option 2: Use .env file (local/dev)
+
+```bash
+# Create .env file with your keys (already gitignored)
+docker run --rm --env-file .env stock-tracker:latest
+```
+
+**Option 3: Production with secrets
+**
+
+```bash
+# Load key from secure secret store, then inject
+export FINNHUB_API_KEY=$(cat /secrets/finnhub-key)
+docker run --rm -e FINNHUB_API_KEY=$FINNHUB_API_KEY stock-tracker:latest
+```
+
+#### Schedule Daily Runs
+
+**Linux/Mac (cron)**:
+
+```bash
+# Edit crontab
+crontab -e
+
+# Add this line (runs daily at 9 AM)
+0 9 * * * docker run --rm -e FINNHUB_API_KEY=$(cat /path/to/secure/key) stock-tracker:latest >> /var/log/stock-tracker.log 2>&1
+```
+
+**Windows (Task Scheduler)**:
+
+1. Open Task Scheduler
+2. Create Basic Task
+3. Name: "Stock Tracker Daily Run"
+4. Trigger: Daily at 9:00 AM
+5. Action: Start a program
+   - Program: `docker`
+   - Arguments: `run --rm -e FINNHUB_API_KEY=your-key stock-tracker:latest`
+   - Start in: `C:\path\to\stock-exchange-tracker`
+
+**systemd (Linux service)**:
+
+Create `/etc/systemd/system/stock-tracker.timer`:
+
+```ini
+[Unit]
+Description=Stock Tracker Daily Run
+
+[Timer]
+OnCalendar=daily
+OnCalendar=09:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+```
+
+Create `/etc/systemd/system/stock-tracker.service`:
+
+```ini
+[Unit]
+Description=Stock Tracker
+
+[Service]
+Type=oneshot
+Environment="FINNHUB_API_KEY=your-key"
+ExecStart=/usr/bin/docker run --rm -e FINNHUB_API_KEY=%FINNHUB_API_KEY% stock-tracker:latest
+```
+
+Enable:
+
+```bash
+sudo systemctl enable stock-tracker.timer
+sudo systemctl start stock-tracker.timer
+```
+
+### Docker Compose (Multi-service)
+
+If you have other services, use `docker-compose.yml`:
+
+```yaml
+version: '3.8'
+
+services:
+  stock-tracker:
+    build: .
+    image: stock-tracker:latest
+    environment:
+      - FINNHUB_API_KEY=${FINNHUB_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    # Or use env_file for local dev
+    # env_file:
+    #   - .env
+    volumes:
+      - ./data:/app/data  # Persist output data
+      - ./logs:/app/logs  # Persist logs
+```
+
+Run:
+
+```bash
+# Set keys in shell
+export FINNHUB_API_KEY=your-key
+docker compose up
+```
+
+### Kubernetes Deployment
+
+For production clusters with scheduling:
+
+#### 1. Create Secret (one-time)
+
+```bash
+kubectl create secret generic stock-tracker-secrets \
+  --from-literal=FINNHUB_API_KEY=your-key \
+  --from-literal=OPENAI_API_KEY=your-key
+```
+
+#### 2. Deploy as CronJob
+
+```yaml
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: stock-tracker
+spec:
+  schedule: "0 9 * * *"  # Daily at 9 AM UTC
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: stock-tracker
+            image: stock-tracker:latest
+            env:
+            - name: FINNHUB_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: stock-tracker-secrets
+                  key: FINNHUB_API_KEY
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: stock-tracker-secrets
+                  key: OPENAI_API_KEY
+          restartPolicy: OnFailure
+```
+
+Apply:
+
+```bash
+kubectl apply -f k8s/stock-tracker-cronjob.yaml
+```
+
+### Cloud/Hosted Options
+
+**AWS ECS + EventBridge**:
+
+- Store key in AWS Secrets Manager
+- Run as ECS Task triggered by EventBridge schedule
+- Task definition references the secret
+
+**Google Cloud Run + Cloud Scheduler**:
+
+- Store key in Secret Manager
+- Deploy as Cloud Run job
+- Cloud Scheduler triggers daily
+
+**Azure Container Instances + Logic Apps**:
+
+- Store key in Key Vault
+- Run as Container Instance
+- Logic Apps triggers daily
+
+### Security Best Practices
+
+1. **Never commit keys to git**
+   - `.env` is already gitignored
+   - Double-check before every commit
+
+2. **Use secret stores in production**
+   - AWS: Secrets Manager or Parameter Store
+   - GCP: Secret Manager
+   - Azure: Key Vault
+   - HashiCorp Vault
+
+3. **Rotate keys periodically**
+   - Generate new Finnhub key every 90 days
+   - Update secret store, redeploy
+
+4. **Limit access**
+   - Use IAM roles/policies for secret access
+   - Principle of least privilege
+
+5. **Audit usage**
+   - Check Finnhub dashboard for unusual activity
+   - Monitor logs for errors
+
+---
+
+## Understanding the Code
+
+### Project Structure
+
+```md
+stock-exchange-tracker/
+├── main.py                     # Entry point (run this!)
+├── src/
+│   ├── __init__.py             # Package initialization
+│   ├── core/                   # Core utilities
+│   │   ├── config.py           # Configuration loader
+│   │   └── logger.py           # Logging setup
+│   ├── services/               # External data services
+│   │   ├── api_client.py       # Finnhub API client (rate limiting, retries)
+│   │   ├── index_fetcher.py    # Gets stock lists from indices
+│   │   ├── stock_screener.py   # Filters stocks by volume/activity
+│   │   └── data_fetcher.py     # Fetches detailed stock data
+│   ├── analysis/               # Data analysis & AI
+│   │   ├── analyzer.py         # Computes gainers/losers/stats
+│   │   └── ai_summarizer.py    # AI-powered market summaries
+│   ├── storage/                # Data persistence
+│   │   └── data_storage.py     # Saves CSV/JSON files
+│   └── cli/                    # Command-line interface
+│       └── stock_tracker.py    # Main workflow orchestration
+├── config/
+│   ├── exchanges.json          # Which indices to track
+│   └── filters.json            # Screening criteria
+├── data/                       # Output files (CSV, JSON)
+└── logs/                       # Execution logs
+```
+
+### How It Works
+
+1. **Index Fetching**: Gets stock symbols from S&P 500 (first 100), NASDAQ-100
+2. **Screening** (1 API call per stock): Quick check of price/volume to filter candidates
+3. **Data Fetching** (2 API calls per qualified stock): Get detailed data for top 20 stocks
+4. **Analysis**: Calculate changes, identify trends
+5. **Storage**: Save to CSV/JSON
+
+### Rate Limiting
+
+- **Free tier**: 60 API calls per minute
+- **Current setup**: ~241 total calls (~4 minutes)
+- **How we stay under limit**:
+  - Screening uses lightweight 1-call method (quote only)
+  - Only 20 qualified stocks get full 2-call fetch (quote + profile)
+  - S&P 500 capped at 100 stocks for screening
+  - 2 parallel workers with staggered starts
+  - Automatic pauses every 25-50 requests
+
+---
+
+## Troubleshooting
+
+### "API key required"
+
+- Make sure `.env` file exists with `FINNHUB_API_KEY=your-key`
+- Check the key is correct (40 characters)
+- Restart terminal after creating `.env`
+
+### "Rate limit exceeded (429)"
+
+- Normal! The tool has built-in retry logic
+- If it happens frequently:
+  - Lower `top_n` in `config/filters.json`
+  - Wait 5-10 minutes between runs
+  - Consider upgrading to Finnhub paid tier
+
+### "No data fetched"
+
+- Check internet connection
+- Verify Finnhub API key is valid
+- Check `logs/stock_tracker_errors_*.log` for details
+
+### Logs not showing?
+
+- Logs are in `logs/` folder (created automatically)
+- Console shows INFO level, files show DEBUG level
+
+---
+
+## Advanced Topics
+
+### AI-Powered Market Summaries (Optional)
+
+By default, the tool generates basic market summaries from templates. Want **natural language AI summaries** instead? Add OpenAI!
+
+**What you get with OpenAI:**
+
+```text
+Market Summary for 2025-01-04:
+
+Today's market showed strong momentum with technology stocks leading the charge. 
+The top gainer, Micron Technology (MU), surged 10.51% on strong earnings expectations, 
+while semiconductor stocks broadly outperformed. The S&P 500 averaged a +1.82% gain 
+with 23 stocks advancing against only 7 declining, indicating broad-based strength. 
+However, select technology stocks like Palantir (PLTR) saw profit-taking with a 
+-5.56% decline after recent gains...
+```
+
+**What you get without OpenAI (demo mode):**
+
+```text
+Market Summary for 2025-01-04:
+Top gainer: MU +10.51%
+Top loser: PLTR -5.56%
+Overall market: Mixed with 23 gainers and 7 losers
+```
+
+#### Setup (takes 3 minutes)
+
+1. **Get an OpenAI API key** (costs ~$0.01-0.05 per summary):
+   - Visit: <https://platform.openai.com/signup>
+   - Add payment method (pay-as-you-go, no monthly fees)
+   - Generate API key from: <https://platform.openai.com/api-keys>
+
+2. **Add to your `.env` file**:
+
+   ```txt
+   FINNHUB_API_KEY=your-finnhub-key
+   OPENAI_API_KEY=sk-proj-your-openai-key-here
+   ```
+
+3. **Run normally** - AI summaries are automatic!
+
+```bash
+python main.py
+```
+
+**Cost estimate**: ~$0.02/day for GPT-4 summaries (< $1/month for daily runs)
+
+### Custom Providers
+
+Want to use a different data provider? Edit `src/api_client.py` to add your provider's API calls.
+
+---
+
+## Performance Tips
+
+### Run Faster
+
+- **Lower `top_n`**: Currently at 20 for optimal speed. Reduce to 10-15 to save more time
+- **Track fewer indices**: Remove one from `config/exchanges.json` (cuts time in half)
+- **Upgrade API tier**: Paid Finnhub plans allow more calls/minute (currently optimized for free tier)
+
+### Run Cheaper
+
+- Keep free tier (60 calls/min)
+- Run once per day (not multiple times)
+- Use Docker for efficiency
+
+---
+
+## FAQ
+
+**Q: Is this free?**  
+A: Yes! Finnhub's free tier is sufficient for daily tracking.
+
+**Q: Can I track other stocks?**  
+A: Yes, edit `config/exchanges.json` to add symbols or change indices.
+
+**Q: What if I miss a day?**  
+A: Just run it again. Each run is independent; data is saved with the date.
+
+**Q: Can I backtest strategies?**  
+A: This tool focuses on daily snapshots. For backtesting, you'd need historical data (not included).
+
+**Q: Is my data private?**  
+A: Yes. All data stays on your machine. API keys never leave your environment.
+
+---
 
 ## Contributing
 
-This is a personal project for tracking daily stock exchange changes.
+Found a bug? Want a feature?
+
+1. Open an issue on GitHub
+2. Submit a pull request
+3. Improvements welcome!
+
+---
+
+## License
+
+MIT License - Free to use, modify, and distribute. See [LICENSE](LICENSE) for details.
 
 ## Author
 
-**lawaloy** - [GitHub Profile](https://github.com/lawaloy)
+**lawaloy** - [GitHub](https://github.com/lawaloy)
 
+---
+
+## API Architecture Details
+
+Our API client (`src/api_client.py`) provides:
+
+- **Thread-safe rate limiting**: Token bucket algorithm ensures we never exceed 60 calls/min
+- **Automatic retry**: Exponential backoff on failures (1s, 2s, 4s)
+- **429 handling**: Respects Retry-After headers, resets rate limiter after waits
+- **Session management**: Connection pooling for efficiency
+- **Two modes**:
+  - `get_stock_data_for_screening()`: 1 API call (quote only) - used for screening
+  - `get_stock_data()`: 2 API calls (quote + profile) - used for qualified stocks
+
+This architecture minimizes API calls while maximizing data quality.
+
+---
+
+## API Resources
+
+- **Finnhub Documentation**: <https://finnhub.io/docs/api>
+- **API Status**: <https://finnhub.io/status>
+- **Support**: <support@finnhub.io>
+- **Dashboard**: <https://finnhub.io/dashboard> (monitor your usage)
+
+---
+
+## Need Help?
+
+- Check `logs/stock_tracker_errors_*.log` for error details
+- Review the Troubleshooting section above
+- Open an issue on GitHub with log excerpts
+- Check Finnhub API status if data fetch fails

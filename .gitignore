@@ -34,10 +34,14 @@ wheels/
 *.swo
 *~
 
-# Data files (optional - uncomment if you don't want to track data files)
-# *.csv
-# *.json
-# data/
+# Data files (output from runs)
+data/*.csv
+data/*.json
+data/cache/
+data/indices/
+
+# Keep config files
+!config/*.json
 
 # Logs
 *.log
