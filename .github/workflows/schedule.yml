@@ -2,7 +2,7 @@ name: Daily Stock Tracker
 
 on:
   schedule:
-    - cron: "0 08 * * *" # runs daily at 08:00 UTC
+    - cron: "0 16 * * *" # runs daily at 16:00 UTC
   workflow_dispatch: {}
 
 jobs:
