@@ -325,6 +325,12 @@ class DataStorage:
         # Disclaimer
         md.append("## Disclaimer")
         md.append("")
+        md.append("> These projections are for informational purposes only. Not financial advice.")
+        md.append(">")
+        md.append("> Always conduct your own research and consult with financial advisors.")
+        md.append("")
+        md.append("---")
+        md.append("")
         md.append(f"*Generated on {generated_date} by Stock Exchange Tracker*")
         
         # Write to file with trailing newline
