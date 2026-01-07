@@ -1,0 +1,493 @@
+"""
+Unit tests for Stock Projector module.
+
+Tests the projection generation, recommendation logic, and confidence scoring.
+"""
+
+import pytest
+from datetime import datetime, timedelta
+from src.analysis.projector import StockProjector
+
+
+class TestStockProjector:
+    """Test suite for StockProjector class."""
+    
+    @pytest.fixture
+    def projector(self):
+        """Create a projector instance for testing."""
+        return StockProjector()
+    
+    @pytest.fixture
+    def sample_stock_bullish(self):
+        """Sample bullish stock data."""
+        return {
+            'symbol': 'AAPL',
+            'close': 150.00,
+            'change_percent': 5.0,
+            'volume': 50000000,
+            'previous_close': 142.86,
+            'market_cap': 2500000,
+            'name': 'Apple Inc'
+        }
+    
+    @pytest.fixture
+    def sample_stock_bearish(self):
+        """Sample bearish stock data."""
+        return {
+            'symbol': 'BEAR',
+            'close': 100.00,
+            'change_percent': -6.0,
+            'volume': 30000000,
+            'previous_close': 106.38,
+            'market_cap': 1000000,
+            'name': 'Bear Stock'
+        }
+    
+    @pytest.fixture
+    def sample_stock_neutral(self):
+        """Sample neutral stock data."""
+        return {
+            'symbol': 'NEUT',
+            'close': 75.00,
+            'change_percent': 0.5,
+            'volume': 10000000,
+            'previous_close': 74.63,
+            'market_cap': 500000,
+            'name': 'Neutral Stock'
+        }
+    
+    @pytest.fixture
+    def sample_stocks_list(self, sample_stock_bullish, sample_stock_bearish, sample_stock_neutral):
+        """List of sample stocks for batch testing."""
+        return [sample_stock_bullish, sample_stock_bearish, sample_stock_neutral]
+    
+    # ========== Initialization Tests ==========
+    
+    def test_projector_initialization(self, projector):
+        """Test projector initializes correctly."""
+        assert projector is not None
+        assert projector.projection_days == 5
+    
+    # ========== Momentum Calculation Tests ==========
+    
+    def test_calculate_momentum_positive(self, projector, sample_stock_bullish):
+        """Test momentum calculation for positive moves."""
+        momentum = projector._calculate_momentum(sample_stock_bullish)
+        assert momentum > 0
+        assert momentum == 50.0  # 5.0% * 10 = 50
+    
+    def test_calculate_momentum_negative(self, projector, sample_stock_bearish):
+        """Test momentum calculation for negative moves."""
+        momentum = projector._calculate_momentum(sample_stock_bearish)
+        assert momentum < 0
+        assert momentum == -60.0  # -6.0% * 10 = -60
+    
+    def test_calculate_momentum_capped(self, projector):
+        """Test momentum is capped at -100 to +100."""
+        extreme_bull = {'change_percent': 15.0}
+        extreme_bear = {'change_percent': -15.0}
+        
+        bull_momentum = projector._calculate_momentum(extreme_bull)
+        bear_momentum = projector._calculate_momentum(extreme_bear)
+        
+        assert bull_momentum == 100.0  # Capped at 100
+        assert bear_momentum == -100.0  # Capped at -100
+    
+    # ========== Volatility Calculation Tests ==========
+    
+    def test_calculate_volatility_low(self, projector):
+        """Test volatility for stable stocks."""
+        stable_stock = {'change_percent': 1.0}
+        volatility = projector._calculate_volatility(stable_stock)
+        assert volatility == 5.0  # 1.0% * 5 = 5
+        assert volatility < 30  # Should be low
+    
+    def test_calculate_volatility_high(self, projector):
+        """Test volatility for volatile stocks."""
+        volatile_stock = {'change_percent': -10.0}
+        volatility = projector._calculate_volatility(volatile_stock)
+        assert volatility == 50.0  # 10.0% * 5 = 50
+        assert volatility > 30  # Should be high
+    
+    def test_calculate_volatility_capped(self, projector):
+        """Test volatility is capped at 100."""
+        extreme_stock = {'change_percent': 25.0}
+        volatility = projector._calculate_volatility(extreme_stock)
+        assert volatility == 100.0  # Capped at 100
+    
+    # ========== Trend Determination Tests ==========
+    
+    def test_determine_trend_bullish(self, projector):
+        """Test bullish trend detection."""
+        trend = projector._determine_trend(momentum=30, change_pct=4.0)
+        assert trend == 'Bullish'
+        
+        # Momentum > 20 OR change_pct > 3 triggers bullish
+        trend = projector._determine_trend(momentum=25, change_pct=2.0)
+        assert trend == 'Bullish'
+    
+    def test_determine_trend_bearish(self, projector):
+        """Test bearish trend detection."""
+        trend = projector._determine_trend(momentum=-30, change_pct=-4.0)
+        assert trend == 'Bearish'
+        
+        # Momentum < -20 OR change_pct < -3 triggers bearish
+        trend = projector._determine_trend(momentum=-25, change_pct=-2.0)
+        assert trend == 'Bearish'
+    
+    def test_determine_trend_neutral(self, projector):
+        """Test neutral trend detection."""
+        trend = projector._determine_trend(momentum=10, change_pct=0.5)
+        assert trend == 'Neutral'
+        
+        trend = projector._determine_trend(momentum=-10, change_pct=-0.5)
+        assert trend == 'Neutral'
+    
+    # ========== Recommendation Generation Tests ==========
+    
+    def test_generate_recommendation_strong_buy(self, projector):
+        """Test STRONG BUY recommendation."""
+        rec = projector._generate_recommendation(momentum=50, volatility=40, change_pct=5.0)
+        assert rec == 'STRONG BUY'
+    
+    def test_generate_recommendation_buy(self, projector):
+        """Test BUY recommendation."""
+        rec = projector._generate_recommendation(momentum=20, volatility=50, change_pct=2.0)
+        assert rec == 'BUY'
+    
+    def test_generate_recommendation_hold(self, projector):
+        """Test HOLD recommendation."""
+        rec = projector._generate_recommendation(momentum=5, volatility=40, change_pct=0.5)
+        assert rec == 'HOLD'
+    
+    def test_generate_recommendation_sell(self, projector):
+        """Test SELL recommendation."""
+        rec = projector._generate_recommendation(momentum=-20, volatility=50, change_pct=-2.0)
+        assert rec == 'SELL'
+    
+    def test_generate_recommendation_strong_sell(self, projector):
+        """Test STRONG SELL recommendation."""
+        rec = projector._generate_recommendation(momentum=-50, volatility=40, change_pct=-5.0)
+        assert rec == 'STRONG SELL'
+    
+    # ========== Price Target Calculation Tests ==========
+    
+    def test_calculate_targets_bullish(self, projector):
+        """Test price targets for bullish stock."""
+        current_price = 100.00
+        low, mid, high = projector._calculate_targets(
+            current_price=current_price,
+            momentum=50,
+            volatility=30,
+            change_pct=5.0
+        )
+        
+        assert low < mid < high
+        assert mid > current_price  # Bullish should project higher
+        assert high - low > 0  # Should have a range
+    
+    def test_calculate_targets_bearish(self, projector):
+        """Test price targets for bearish stock."""
+        current_price = 100.00
+        low, mid, high = projector._calculate_targets(
+            current_price=current_price,
+            momentum=-50,
+            volatility=30,
+            change_pct=-5.0
+        )
+        
+        assert low < mid < high
+        assert mid < current_price  # Bearish should project lower
+    
+    def test_calculate_targets_neutral(self, projector):
+        """Test price targets for neutral stock."""
+        current_price = 100.00
+        low, mid, high = projector._calculate_targets(
+            current_price=current_price,
+            momentum=0,
+            volatility=20,
+            change_pct=0.0
+        )
+        
+        assert low < mid < high
+        # Mid should be close to current price for neutral
+        assert abs(mid - current_price) < 5
+    
+    # ========== Confidence Calculation Tests ==========
+    
+    def test_calculate_confidence_high(self, projector):
+        """Test high confidence scenario."""
+        stock = {
+            'volume': 50000000,
+            'market_cap': 2500000
+        }
+        confidence = projector._calculate_confidence(
+            momentum=50,
+            volatility=20,
+            volume=stock['volume'],
+            stock_data=stock
+        )
+        assert confidence >= 70
+        assert confidence <= 100
+    
+    def test_calculate_confidence_low(self, projector):
+        """Test low confidence scenario."""
+        stock = {
+            'volume': 500000,
+            'market_cap': 50000
+        }
+        confidence = projector._calculate_confidence(
+            momentum=10,
+            volatility=80,
+            volume=stock['volume'],
+            stock_data=stock
+        )
+        assert confidence < 70
+    
+    def test_calculate_confidence_capped(self, projector):
+        """Test confidence is capped at 0-100."""
+        stock = {
+            'volume': 100000000,
+            'market_cap': 5000000
+        }
+        confidence = projector._calculate_confidence(
+            momentum=100,
+            volatility=0,
+            volume=stock['volume'],
+            stock_data=stock
+        )
+        assert 0 <= confidence <= 100
+    
+    # ========== Risk Assessment Tests ==========
+    
+    def test_assess_risk_low(self, projector):
+        """Test low risk assessment."""
+        risk = projector._assess_risk(volatility=20)
+        assert risk == 'Low'
+    
+    def test_assess_risk_medium(self, projector):
+        """Test medium risk assessment."""
+        risk = projector._assess_risk(volatility=45)
+        assert risk == 'Medium'
+    
+    def test_assess_risk_high(self, projector):
+        """Test high risk assessment."""
+        risk = projector._assess_risk(volatility=75)
+        assert risk == 'High'
+    
+    # ========== Reason Generation Tests ==========
+    
+    def test_generate_reason_bullish(self, projector, sample_stock_bullish):
+        """Test reason generation for bullish stock."""
+        reason = projector._generate_reason(
+            stock_data=sample_stock_bullish,
+            momentum=50,
+            trend='Bullish',
+            recommendation='STRONG BUY'
+        )
+        assert isinstance(reason, str)
+        assert len(reason) > 0
+        assert 'gain' in reason.lower() or 'momentum' in reason.lower()
+    
+    def test_generate_reason_bearish(self, projector, sample_stock_bearish):
+        """Test reason generation for bearish stock."""
+        reason = projector._generate_reason(
+            stock_data=sample_stock_bearish,
+            momentum=-60,
+            trend='Bearish',
+            recommendation='STRONG SELL'
+        )
+        assert isinstance(reason, str)
+        assert len(reason) > 0
+        assert 'decline' in reason.lower() or 'pressure' in reason.lower()
+    
+    # ========== Single Stock Projection Tests ==========
+    
+    def test_project_stock_bullish(self, projector, sample_stock_bullish):
+        """Test projection for bullish stock."""
+        projection = projector._project_stock(sample_stock_bullish)
+        
+        assert projection is not None
+        assert projection['symbol'] == 'AAPL'
+        assert projection['current_price'] == 150.00
+        assert projection['target_mid'] > 0
+        assert projection['recommendation'] in ['STRONG BUY', 'BUY', 'HOLD', 'SELL', 'STRONG SELL']
+        assert 0 <= projection['confidence'] <= 100
+        assert projection['trend'] in ['Bullish', 'Bearish', 'Neutral']
+        assert projection['risk_level'] in ['Low', 'Medium', 'High']
+    
+    def test_project_stock_bearish(self, projector, sample_stock_bearish):
+        """Test projection for bearish stock."""
+        projection = projector._project_stock(sample_stock_bearish)
+        
+        assert projection is not None
+        assert projection['symbol'] == 'BEAR'
+        assert projection['trend'] == 'Bearish'
+        assert projection['recommendation'] in ['SELL', 'STRONG SELL']
+        assert projection['target_mid'] < projection['current_price']
+    
+    def test_project_stock_invalid_price(self, projector):
+        """Test projection with invalid price returns None."""
+        invalid_stock = {
+            'symbol': 'INVALID',
+            'close': 0,
+            'change_percent': 5.0,
+            'volume': 1000000,
+            'previous_close': 100,
+            'market_cap': 50000
+        }
+        projection = projector._project_stock(invalid_stock)
+        assert projection is None
+    
+    def test_project_stock_negative_price(self, projector):
+        """Test projection with negative price returns None."""
+        invalid_stock = {
+            'symbol': 'INVALID',
+            'close': -50,
+            'change_percent': 5.0,
+            'volume': 1000000,
+            'previous_close': 100,
+            'market_cap': 50000
+        }
+        projection = projector._project_stock(invalid_stock)
+        assert projection is None
+    
+    # ========== Batch Projection Tests ==========
+    
+    def test_generate_projections_multiple_stocks(self, projector, sample_stocks_list):
+        """Test generating projections for multiple stocks."""
+        projections = projector.generate_projections(sample_stocks_list)
+        
+        assert isinstance(projections, dict)
+        assert len(projections) == 3  # All 3 stocks should have projections
+        assert 'AAPL' in projections
+        assert 'BEAR' in projections
+        assert 'NEUT' in projections
+    
+    def test_generate_projections_empty_list(self, projector):
+        """Test generating projections for empty list."""
+        projections = projector.generate_projections([])
+        assert isinstance(projections, dict)
+        assert len(projections) == 0
+    
+    def test_generate_projections_filters_invalid(self, projector):
+        """Test that invalid stocks are filtered out."""
+        stocks = [
+            {'symbol': 'VALID', 'close': 100, 'change_percent': 2.0, 'volume': 1000000, 'previous_close': 98, 'market_cap': 50000},
+            {'symbol': 'INVALID', 'close': 0, 'change_percent': 2.0, 'volume': 1000000, 'previous_close': 98, 'market_cap': 50000},
+            {'symbol': 'INVALID2', 'close': -10, 'change_percent': 2.0, 'volume': 1000000, 'previous_close': 98, 'market_cap': 50000}
+        ]
+        projections = projector.generate_projections(stocks)
+        assert len(projections) == 1  # Only VALID should pass
+        assert 'VALID' in projections
+    
+    # ========== Projection Summary Tests ==========
+    
+    def test_generate_projection_summary(self, projector, sample_stocks_list):
+        """Test projection summary generation."""
+        projections = projector.generate_projections(sample_stocks_list)
+        summary = projector.generate_projection_summary(projections)
+        
+        assert isinstance(summary, dict)
+        assert 'total_projections' in summary
+        assert summary['total_projections'] == 3
+        assert 'recommendations' in summary
+        assert 'average_confidence' in summary
+        assert 'average_expected_change' in summary
+        assert 'top_opportunities' in summary
+    
+    def test_projection_summary_empty(self, projector):
+        """Test projection summary with no projections."""
+        summary = projector.generate_projection_summary({})
+        assert isinstance(summary, dict)
+        assert len(summary) == 0
+    
+    def test_projection_summary_recommendations_count(self, projector, sample_stocks_list):
+        """Test recommendation counts in summary."""
+        projections = projector.generate_projections(sample_stocks_list)
+        summary = projector.generate_projection_summary(projections)
+        
+        recommendations = summary['recommendations']
+        total_recs = sum(recommendations.values())
+        assert total_recs == len(projections)
+    
+    # ========== Date and Timestamp Tests ==========
+    
+    def test_projection_has_dates(self, projector, sample_stock_bullish):
+        """Test that projections include date fields."""
+        projection = projector._project_stock(sample_stock_bullish)
+        
+        assert 'projection_date' in projection
+        assert 'generated_at' in projection
+        
+        # Verify dates are in ISO format and valid
+        projection_date_str = projection['projection_date']
+        generated_at_str = projection['generated_at']
+        
+        # Parse the date strings
+        projection_date = datetime.fromisoformat(projection_date_str).date()
+        generated_at = datetime.fromisoformat(generated_at_str)
+        
+        assert projection_date > datetime.now().date()
+        assert generated_at.date() == datetime.now().date()
+    
+    def test_projection_date_is_5_days_ahead(self, projector, sample_stock_bullish):
+        """Test that projection date is 5 days in the future."""
+        projection = projector._project_stock(sample_stock_bullish)
+        
+        proj_date = datetime.fromisoformat(projection['projection_date'])
+        expected_date = datetime.now() + timedelta(days=5)
+        
+        # Should be within the same day (accounting for time zones)
+        assert proj_date.date() == expected_date.date()
+    
+    # ========== Edge Cases and Error Handling ==========
+    
+    def test_missing_optional_fields(self, projector):
+        """Test projection with missing optional fields."""
+        minimal_stock = {
+            'symbol': 'MIN',
+            'close': 50.0,
+            'change_percent': 2.0,
+            'volume': 0,
+            'previous_close': 49.0
+            # Missing market_cap, name
+        }
+        projection = projector._project_stock(minimal_stock)
+        assert projection is not None
+        assert projection['symbol'] == 'MIN'
+    
+    def test_zero_volume_stock(self, projector):
+        """Test projection for stock with zero volume."""
+        zero_volume = {
+            'symbol': 'ZV',
+            'close': 100.0,
+            'change_percent': 2.0,
+            'volume': 0,
+            'previous_close': 98.0,
+            'market_cap': 50000
+        }
+        projection = projector._project_stock(zero_volume)
+        assert projection is not None
+        # Should have lower confidence due to low volume
+        assert projection['confidence'] < 80
+    
+    def test_extreme_price_movement(self, projector):
+        """Test projection for extreme price movement."""
+        extreme_stock = {
+            'symbol': 'EXT',
+            'close': 200.0,
+            'change_percent': 50.0,  # Extreme move
+            'volume': 100000000,
+            'previous_close': 133.33,
+            'market_cap': 1000000
+        }
+        projection = projector._project_stock(extreme_stock)
+        assert projection is not None
+        # Should consider mean reversion
+        assert 'reversal' in projection['reason'].lower()
+
+
+if __name__ == '__main__':
+    pytest.main([__file__, '-v', '--tb=short'])
+
