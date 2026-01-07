@@ -9,6 +9,7 @@ from ..services.data_fetcher import StockDataFetcher
 from ..storage.data_storage import DataStorage
 from ..analysis.analyzer import StockAnalyzer
 from ..analysis.ai_summarizer import AISummarizer
+from ..analysis.projector import StockProjector
 from ..core.logger import setup_logger
 from ..core.config import get_indices_to_track
 from datetime import datetime
@@ -25,6 +26,7 @@ class StockTrackerWorkflow:
     This class handles the business logic for:
     - Fetching stock data from indices
     - Analyzing market data
+    - Generating projections and recommendations
     - Generating AI summaries
     - Saving results
     
@@ -37,6 +39,7 @@ class StockTrackerWorkflow:
         self.storage = DataStorage()
         self.analyzer = StockAnalyzer()
         self.ai_summarizer = AISummarizer()
+        self.projector = StockProjector()
         logger.debug("Workflow components initialized")
     
     def run(self, use_screener: bool = True) -> Dict[str, Any]:
@@ -51,6 +54,8 @@ class StockTrackerWorkflow:
             - success: bool
             - data: List of stock data
             - analysis: Analysis results
+            - projections: Stock projections and recommendations
+            - projection_summary: Summary of projections
             - ai_summary: AI-generated summary (if available)
             - file_paths: Saved file paths
             - index_comparison: Index performance comparison
@@ -77,18 +82,24 @@ class StockTrackerWorkflow:
             logger.info("Step 3: Analyzing data")
             analysis_result = self._analyze_data(all_data, all_index_data)
             
-            # Step 4: Generate AI summary
-            logger.info("Step 4: Generating summary")
+            # Step 4: Generate projections
+            logger.info("Step 4: Generating projections")
+            projection_result = self._generate_projections(all_data)
+            
+            # Step 5: Generate AI summary
+            logger.info("Step 5: Generating summary")
             ai_summary = self._generate_summary(
                 analysis_result["analysis"],
                 analysis_result["index_comparison"]
             )
             
-            # Step 5: Save summary
+            # Step 6: Save summary and projections
             summary_result = self._save_summary(
                 analysis_result["analysis"],
                 analysis_result["index_comparison"],
-                ai_summary
+                ai_summary,
+                projection_result["projections"],
+                projection_result["projection_summary"]
             )
             
             logger.info("Workflow completed successfully")
@@ -98,6 +109,8 @@ class StockTrackerWorkflow:
                 "data": all_data,
                 "analysis": analysis_result["analysis"],
                 "index_comparison": analysis_result["index_comparison"],
+                "projections": projection_result["projections"],
+                "projection_summary": projection_result["projection_summary"],
                 "ai_summary": ai_summary,
                 "file_paths": {
                     "data": save_result.get("file_path"),
@@ -107,7 +120,8 @@ class StockTrackerWorkflow:
                     "date": datetime.now().date(),
                     "total_stocks": len(all_data),
                     "screener_enabled": use_screener,
-                    "ai_enabled": self.ai_summarizer.enabled
+                    "ai_enabled": self.ai_summarizer.enabled,
+                    "projections_enabled": True
                 }
             }
             
@@ -226,13 +240,38 @@ class StockTrackerWorkflow:
             logger.error(f"Summary generation failed: {str(e)}")
             return None
     
+    def _generate_projections(self, data: List[Dict]) -> Dict[str, Any]:
+        """Generate stock projections and recommendations."""
+        try:
+            # Generate projections for all stocks
+            projections = self.projector.generate_projections(data)
+            
+            # Generate projection summary
+            projection_summary = self.projector.generate_projection_summary(projections)
+            
+            logger.info(f"Generated {len(projections)} projections")
+            
+            return {
+                "projections": projections,
+                "projection_summary": projection_summary
+            }
+            
+        except Exception as e:
+            logger.error(f"Projection generation failed: {str(e)}")
+            return {
+                "projections": {},
+                "projection_summary": {}
+            }
+    
     def _save_summary(
         self, 
         analysis: Dict, 
         index_comparison: Dict,
-        ai_summary: Optional[str]
+        ai_summary: Optional[str],
+        projections: Dict = None,
+        projection_summary: Dict = None
     ) -> Dict[str, Any]:
-        """Save analysis summary to JSON."""
+        """Save analysis summary and projections to JSON and CSV."""
         try:
             summary_data = {
                 "analysis": analysis,
@@ -241,10 +280,28 @@ class StockTrackerWorkflow:
             if ai_summary:
                 summary_data["ai_summary"] = ai_summary
             
+            if projections:
+                summary_data["projections"] = projections
+            
+            if projection_summary:
+                summary_data["projection_summary"] = projection_summary
+            
             summary_path = self.storage.save_summary(summary_data)
+            
+            # Also save projections as separate CSV for easier analysis
+            projection_csv_path = None
+            if projections:
+                projection_csv_path = self.storage.save_projections(projections)
+                if projection_csv_path:
+                    logger.info(f"Projections CSV saved to: {projection_csv_path}")
+            
             if summary_path:
                 logger.info(f"Summary saved to: {summary_path}")
-                return {"success": True, "file_path": summary_path}
+                return {
+                    "success": True, 
+                    "file_path": summary_path,
+                    "projection_csv_path": projection_csv_path
+                }
             else:
                 return {"success": False, "error": "Failed to save summary"}
         except Exception as e:

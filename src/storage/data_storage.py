@@ -95,6 +95,242 @@ class DataStorage:
         
         return str(summary_path)
     
+    def save_projections(self, projections: Dict, date: datetime.date = None) -> str:
+        """
+        Save stock projections to CSV and generate Markdown report.
+        
+        Args:
+            projections: Dictionary of stock projections
+            date: Date for the projections (defaults to today)
+        
+        Returns:
+            Path to saved CSV file
+        """
+        if not projections:
+            return None
+        
+        if date is None:
+            date = datetime.now().date()
+        
+        # Convert projections dict to list of dicts for DataFrame
+        projection_list = list(projections.values())
+        
+        df = pd.DataFrame(projection_list)
+        
+        # Reorder columns for better readability
+        column_order = [
+            'symbol', 'current_price', 'target_low', 'target_mid', 'target_high',
+            'expected_change_percent', 'recommendation', 'confidence', 'trend',
+            'momentum_score', 'volatility_score', 'risk_level', 'reason',
+            'projection_date', 'generated_at'
+        ]
+        
+        # Only include columns that exist
+        columns = [col for col in column_order if col in df.columns]
+        df = df[columns]
+        
+        # Save CSV
+        csv_path = self.data_dir / f"projections_{date.strftime('%Y-%m-%d')}.csv"
+        df.to_csv(csv_path, index=False)
+        
+        # Generate Markdown report
+        try:
+            md_path = self.data_dir / f"projections_{date.strftime('%Y-%m-%d')}.md"
+            self._generate_projection_markdown(df, md_path, date)
+        except Exception as e:
+            print(f"Warning: Could not generate markdown report: {e}")
+        
+        return str(csv_path)
+    
+    def _generate_projection_markdown(self, df: pd.DataFrame, output_path: Path, date: datetime.date):
+        """Generate a formatted Markdown report from projections DataFrame."""
+        from datetime import datetime
+        
+        # Parse dates
+        projection_date = pd.to_datetime(df['projection_date'].iloc[0]).strftime('%B %d, %Y')
+        generated_date = datetime.now().strftime('%B %d, %Y at %I:%M %p')
+        
+        # Calculate statistics
+        total_stocks = len(df)
+        avg_confidence = df['confidence'].mean()
+        avg_expected_change = df['expected_change_percent'].mean()
+        
+        # Get counts
+        rec_counts = df['recommendation'].value_counts().to_dict()
+        trend_counts = df['trend'].value_counts().to_dict()
+        risk_counts = df['risk_level'].value_counts().to_dict()
+        
+        # Filter by recommendation
+        strong_buys = df[df['recommendation'] == 'STRONG BUY'].nlargest(10, 'confidence')
+        buys = df[df['recommendation'] == 'BUY'].nlargest(10, 'confidence')
+        strong_sells = df[df['recommendation'] == 'STRONG SELL'].nlargest(10, 'confidence')
+        
+        # Top movers
+        top_gainers = df.nlargest(10, 'expected_change_percent')
+        top_decliners = df.nsmallest(10, 'expected_change_percent')
+        
+        # High confidence picks
+        high_confidence = df[df['confidence'] >= 85].nlargest(10, 'expected_change_percent')
+        
+        # Build markdown content
+        md = []
+        md.append("# Stock Market Projections Report")
+        md.append("")
+        md.append(f"**Projection Period:** 5 Days (Target Date: {projection_date})")
+        md.append("")
+        md.append(f"**Generated:** {generated_date}")
+        md.append("")
+        md.append(f"**Total Stocks Analyzed:** {total_stocks}")
+        md.append("")
+        md.append("---")
+        md.append("")
+        
+        # Executive Summary
+        md.append("## Executive Summary")
+        md.append("")
+        md.append(f"- **Average Confidence Level:** {avg_confidence:.1f}%")
+        md.append(f"- **Expected Market Direction:** {'+' if avg_expected_change >= 0 else ''}{avg_expected_change:.2f}%")
+        md.append(f"- **Market Sentiment:** {'Bullish' if avg_expected_change > 0.5 else 'Bearish' if avg_expected_change < -0.5 else 'Neutral'}")
+        md.append("")
+        
+        # Recommendation distribution
+        md.append("### Recommendation Distribution")
+        md.append("")
+        md.append("```text")
+        total_recs = sum(rec_counts.values())
+        for rec in ['STRONG BUY', 'BUY', 'HOLD', 'SELL', 'STRONG SELL']:
+            count = rec_counts.get(rec, 0)
+            pct = (count / total_recs * 100) if total_recs > 0 else 0
+            bar = '█' * int(pct / 2)
+            md.append(f"{rec:12} │ {bar} {count:3d} ({pct:5.1f}%)")
+        md.append("```")
+        md.append("")
+        
+        # Trend breakdown
+        md.append("### Market Sentiment Breakdown")
+        md.append("")
+        md.append("| Trend | Count | Percentage |")
+        md.append("| ----- | ----- | ---------- |")
+        for trend in ['Bullish', 'Neutral', 'Bearish']:
+            count = trend_counts.get(trend, 0)
+            pct = (count / total_stocks * 100) if total_stocks > 0 else 0
+            md.append(f"| {trend} | {count} | {pct:.1f}% |")
+        md.append("")
+        
+        # Risk profile
+        md.append("### Risk Profile")
+        md.append("")
+        md.append("| Risk Level | Count | Percentage |")
+        md.append("| ---------- | ----- | ---------- |")
+        for risk in ['Low', 'Medium', 'High']:
+            count = risk_counts.get(risk, 0)
+            pct = (count / total_stocks * 100) if total_stocks > 0 else 0
+            md.append(f"| {risk} | {count} | {pct:.1f}% |")
+        md.append("")
+        md.append("---")
+        md.append("")
+        
+        # Strong Buys
+        md.append("## STRONG BUY Opportunities")
+        md.append("")
+        md.append(f"{len(strong_buys)} stocks identified with STRONG BUY rating")
+        md.append("")
+        
+        if len(strong_buys) > 0:
+            md.append("| Symbol | Current → Target | Change | Confidence | Reason |")
+            md.append("| ------ | ---------------- | ------ | ---------- | ------ |")
+            for _, stock in strong_buys.iterrows():
+                reason_short = stock['reason'][:55] + "..." if len(stock['reason']) > 55 else stock['reason']
+                md.append(f"| **{stock['symbol']}** | ${stock['current_price']:.2f} → ${stock['target_mid']:.2f} | "
+                         f"{stock['expected_change_percent']:+.1f}% | {stock['confidence']}% | {reason_short} |")
+        md.append("")
+        md.append("---")
+        md.append("")
+        
+        # Buy Opportunities
+        md.append("## BUY Opportunities")
+        md.append("")
+        md.append(f"{len(buys)} stocks identified with BUY rating")
+        md.append("")
+        
+        if len(buys) > 0:
+            md.append("| Symbol | Current | Target | Change | Confidence | Risk |")
+            md.append("| ------ | ------- | ------ | ------ | ---------- | ---- |")
+            for _, stock in buys.iterrows():
+                md.append(f"| **{stock['symbol']}** | ${stock['current_price']:.2f} | ${stock['target_mid']:.2f} | "
+                         f"{stock['expected_change_percent']:+.1f}% | {stock['confidence']}% | {stock['risk_level']} |")
+        md.append("")
+        md.append("---")
+        md.append("")
+        
+        # Strong Sells
+        md.append("## STRONG SELL Warnings")
+        md.append("")
+        md.append(f"{len(strong_sells)} stocks identified with STRONG SELL rating")
+        md.append("")
+        
+        if len(strong_sells) > 0:
+            md.append("| Symbol | Current | Target | Change | Confidence | Risk | Reason |")
+            md.append("| ------ | ------- | ------ | ------ | ---------- | ---- | ------ |")
+            for _, stock in strong_sells.iterrows():
+                reason_short = stock['reason'][:50] + "..." if len(stock['reason']) > 50 else stock['reason']
+                md.append(f"| **{stock['symbol']}** | ${stock['current_price']:.2f} | ${stock['target_mid']:.2f} | "
+                         f"{stock['expected_change_percent']:+.1f}% | {stock['confidence']}% | {stock['risk_level']} | {reason_short} |")
+        md.append("")
+        md.append("---")
+        md.append("")
+        
+        # Top Gainers
+        md.append("## Top Expected Price Gainers")
+        md.append("")
+        md.append("Stocks projected to increase the most (regardless of recommendation)")
+        md.append("")
+        md.append("| Symbol | Current | Target | Expected Gain | Confidence | Recommendation |")
+        md.append("| ------ | ------- | ------ | ------------- | ---------- | -------------- |")
+        for _, stock in top_gainers.iterrows():
+            md.append(f"| **{stock['symbol']}** | ${stock['current_price']:.2f} | ${stock['target_mid']:.2f} | "
+                     f"{stock['expected_change_percent']:+.1f}% | {stock['confidence']}% | {stock['recommendation']} |")
+        md.append("")
+        
+        # Top Decliners
+        md.append("## Top Expected Price Decliners")
+        md.append("")
+        md.append("Stocks projected to decline the most")
+        md.append("")
+        md.append("| Symbol | Current | Target | Expected Decline | Confidence | Recommendation |")
+        md.append("| ------ | ------- | ------ | ---------------- | ---------- | -------------- |")
+        for _, stock in top_decliners.iterrows():
+            md.append(f"| **{stock['symbol']}** | ${stock['current_price']:.2f} | ${stock['target_mid']:.2f} | "
+                     f"{stock['expected_change_percent']:+.1f}% | {stock['confidence']}% | {stock['recommendation']} |")
+        md.append("")
+        md.append("---")
+        md.append("")
+        
+        # High Confidence Picks
+        md.append("## High Confidence Picks (85%+)")
+        md.append("")
+        md.append(f"{len(high_confidence)} stocks with highest confidence and best upside potential")
+        md.append("")
+        
+        if len(high_confidence) > 0:
+            md.append("| Symbol | Current → Target | Expected Change | Confidence | Recommendation | Trend |")
+            md.append("| ------ | ---------------- | --------------- | ---------- | -------------- | ----- |")
+            for _, stock in high_confidence.iterrows():
+                md.append(f"| **{stock['symbol']}** | ${stock['current_price']:.2f} → ${stock['target_mid']:.2f} | "
+                         f"{stock['expected_change_percent']:+.1f}% | {stock['confidence']}% | {stock['recommendation']} | {stock['trend']} |")
+        md.append("")
+        md.append("---")
+        md.append("")
+        
+        # Disclaimer
+        md.append("## Disclaimer")
+        md.append("")
+        md.append(f"*Generated on {generated_date} by Stock Exchange Tracker*")
+        
+        # Write to file with trailing newline
+        with open(output_path, 'w', encoding='utf-8') as f:
+            f.write('\n'.join(md) + '\n')
+    
     def get_historical_data(self, start_date: datetime.date = None, 
                           end_date: datetime.date = None) -> pd.DataFrame:
         """

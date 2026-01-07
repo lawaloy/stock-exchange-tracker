@@ -27,6 +27,8 @@ def display_results(result: dict):
     
     analysis = result.get("analysis", {})
     index_comparison = result.get("index_comparison", {})
+    projections = result.get("projections", {})
+    projection_summary = result.get("projection_summary", {})
     ai_summary = result.get("ai_summary")
     metadata = result.get("metadata", {})
     
@@ -78,6 +80,55 @@ def display_results(result: dict):
             logger.info(f"    Stocks: {stats['stock_count']}")
             logger.info(f"    Avg Change: {stats['average_change_percent']:.2f}%")
             logger.info(f"    Gainers: {stats['gainers']} | Losers: {stats['losers']}")
+        logger.info("")
+    
+    # Projection summary
+    if projection_summary:
+        logger.info("=" * 60)
+        logger.info("STOCK PROJECTIONS - Next 5 Days")
+        logger.info("=" * 60)
+        
+        # Overall projection stats
+        logger.info(f"Total Projections: {projection_summary.get('total_projections', 0)}")
+        logger.info(f"Average Confidence: {projection_summary.get('average_confidence', 0):.1f}%")
+        logger.info(f"Expected Market Move: {projection_summary.get('average_expected_change', 0):+.2f}%")
+        logger.info("")
+        
+        # Recommendation breakdown
+        recommendations = projection_summary.get('recommendations', {})
+        if recommendations:
+            logger.info("Recommendation Breakdown:")
+            for rec, count in sorted(recommendations.items(), key=lambda x: x[1], reverse=True):
+                logger.info(f"  {rec}: {count}")
+            logger.info("")
+        
+        # Top opportunities
+        opportunities = projection_summary.get('top_opportunities', {})
+        
+        if opportunities.get('strong_buys'):
+            logger.info("Top 5 BUY Opportunities:")
+            for i, stock in enumerate(opportunities['strong_buys'][:5], 1):
+                proj = projections.get(stock['symbol'])
+                if proj:
+                    logger.info(f"  {i}. {proj['symbol']} - Target: ${proj['target_mid']:.2f} "
+                          f"({proj['expected_change_percent']:+.1f}%) | "
+                          f"Confidence: {proj['confidence']}%")
+                    logger.info(f"     Reason: {proj['reason']}")
+            logger.info("")
+        
+        if opportunities.get('strong_sells'):
+            logger.info("Top 5 SELL Warnings:")
+            for i, stock in enumerate(opportunities['strong_sells'][:5], 1):
+                proj = projections.get(stock['symbol'])
+                if proj:
+                    logger.info(f"  {i}. {proj['symbol']} - Target: ${proj['target_mid']:.2f} "
+                          f"({proj['expected_change_percent']:+.1f}%) | "
+                          f"Confidence: {proj['confidence']}%")
+                    logger.info(f"     Reason: {proj['reason']}")
+            logger.info("")
+        
+        logger.info(f"Full projections available in summary file")
+        logger.info("=" * 60)
         logger.info("")
     
     # File paths

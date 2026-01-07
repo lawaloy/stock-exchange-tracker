@@ -37,6 +37,7 @@ wheels/
 # Data files (output from runs)
 data/*.csv
 data/*.json
+data/*.md
 data/cache/
 data/indices/
 
