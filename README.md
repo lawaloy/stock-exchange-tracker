@@ -9,10 +9,15 @@ This tool automatically:
 1. **Screens** major stock indices (S&P 500, NASDAQ-100) to find active, high-volume stocks
 2. **Fetches** real-time market data using official APIs (no scraping!)
 3. **Analyzes** daily changes, identifies top gainers/losers
-4. **Saves** results to CSV files and generates summary reports
-5. **Logs** everything for troubleshooting and monitoring
+4. **Projects** 5-day price targets with buy/sell/hold recommendations
+5. **Saves** results to CSV files and generates summary reports
+6. **Logs** everything for troubleshooting and monitoring
 
 **Run time**: ~4 minutes per day on the free tier
+
+### Coming Soon: Web Dashboard
+
+**Visual, interactive dashboard** for exploring stock data and projections. See [Dashboard Design](docs/DASHBOARD_DESIGN.md) for details.
 
 ---
 
