@@ -50,7 +50,8 @@ def check_markdown_with_markdownlint(files, fix=False):
         
         cmd.extend([str(f) for f in files])
         
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        # On Windows, use shell=True to find .cmd files
+        result = subprocess.run(cmd, capture_output=True, text=True, shell=True)
         
         if result.returncode == 0:
             print(f"All {len(files)} markdown files are clean!")

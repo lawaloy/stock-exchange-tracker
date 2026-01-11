@@ -6,7 +6,7 @@ This directory contains unit tests for the Stock Exchange Tracker project, organ
 
 ## Test Structure
 
-```txt
+```text
 tests/
 ├── __init__.py
 ├── test_core_config.py         # Tests for core/config.py
@@ -86,12 +86,14 @@ When adding new functionality, follow these guidelines:
    - `src/core/config.py` → `tests/test_core_config.py`
 
 2. **Use descriptive test names**: Start with `test_` and describe what's being tested
+
    ```python
    def test_load_from_config_file(self):
        """Test loading indices from config file."""
    ```
 
 3. **Follow AAA pattern**: Arrange, Act, Assert
+
    ```python
    def test_example(self):
        # Arrange: Set up test data
@@ -105,6 +107,7 @@ When adding new functionality, follow these guidelines:
    ```
 
 4. **Use mocks for external dependencies**:
+
    ```python
    @patch('requests.Session')
    def test_api_call(self, mock_session):
@@ -112,6 +115,7 @@ When adding new functionality, follow these guidelines:
    ```
 
 5. **Clean up resources**: Use `setUp()` and `tearDown()` for test fixtures
+
    ```python
    def setUp(self):
        self.temp_dir = tempfile.mkdtemp()
@@ -129,6 +133,7 @@ pip install pytest pytest-cov
 ```
 
 Or for unittest (built-in, no install needed):
+
 ```bash
 python -m unittest discover tests/
 ```
@@ -147,16 +152,17 @@ These tests are designed to run in CI/CD pipelines. Example GitHub Actions:
 ## TODO
 
 **Priority - New Feature Tests:**
+
 - [ ] Tests for new screening filters (when added)
 - [ ] Tests for additional exchanges (when added)
 - [ ] Tests for visualization module (when added)
 - [ ] Tests for alert system (when added)
 
 **Current - Missing Tests:**
+
 - [ ] Integration tests for full workflow
 - [ ] Tests for services/data_fetcher.py
 - [ ] Tests for services/stock_screener.py
 - [ ] Tests for services/index_fetcher.py
 - [ ] Tests for analysis/ai_summarizer.py
 - [ ] Performance tests for API rate limiting
-

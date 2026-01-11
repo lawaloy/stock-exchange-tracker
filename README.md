@@ -52,7 +52,7 @@ pip install -e .
 
 Create a file named `.env` in the project folder:
 
-```txt
+```text
 FINNHUB_API_KEY=your-api-key-here
 ```
 
@@ -423,7 +423,7 @@ kubectl apply -f k8s/stock-tracker-cronjob.yaml
 
 ### Project Structure
 
-```md
+```text
 stock-exchange-tracker/
 ├── main.py                     # Entry point (run this!)
 ├── src/
@@ -539,7 +539,7 @@ Overall market: Mixed with 23 gainers and 7 losers
 
 2. **Add to your `.env` file**:
 
-   ```txt
+   ```text
    FINNHUB_API_KEY=your-finnhub-key
    OPENAI_API_KEY=sk-proj-your-openai-key-here
    ```
