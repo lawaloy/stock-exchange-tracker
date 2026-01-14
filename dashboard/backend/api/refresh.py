@@ -36,8 +36,6 @@ class RefreshStatusResponse(BaseModel):
 
 def run_stock_tracker():
     """Run the stock tracker in a separate process"""
-    global refresh_status
-    
     try:
         refresh_status["is_running"] = True
         refresh_status["progress"] = "Starting stock tracker..."

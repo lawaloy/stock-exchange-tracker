@@ -159,7 +159,9 @@ class StockTrackerWorkflow:
                 all_data_sorted = sorted(all_data, key=lambda x: x.get('volume', 0), reverse=True)
                 all_data = all_data_sorted[:top_n_stocks]
                 logger.info(f"Selected top {len(all_data)} most active stocks")
-                logger.debug(f"Top 5 by volume: {[f\"{s['symbol']} ({s.get('volume', 0):,})\" for s in all_data[:5]]}")
+                # Log top 5 stocks by volume
+                top_5_symbols = [f"{s['symbol']} ({s.get('volume', 0):,})" for s in all_data[:5]]
+                logger.debug(f"Top 5 by volume: {top_5_symbols}")
             
             if not all_data:
                 logger.warning("No data was fetched")
