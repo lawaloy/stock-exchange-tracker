@@ -7,16 +7,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Planned for v0.3.0
+### Planned for Future Releases
+
+- Historical trends page with time-series analysis
+- Dark mode toggle
+- Enhanced mobile optimization
+- Real-time WebSocket updates
+- User authentication and watchlists
+
+## [0.3.0] - 2026-01-14
+
+### Added
 
 - **Web Dashboard**: Modern, interactive dashboard for visualizing stock data and projections
-  - Real-time market overview with KPI cards
-  - Interactive charts for top gainers/losers
-  - Filterable stock table with detailed views
-  - Historical trend analysis
-  - Projection accuracy tracking
-  - Mobile responsive design
-  - See [Dashboard Design](docs/DASHBOARD_DESIGN.md) for full specifications
+  - Real-time market overview with KPI cards (stocks tracked, confidence, expected move)
+  - Interactive bar chart for top gainers/losers
+  - Pie chart for recommendation distribution
+  - Filterable and sortable stock table with pagination
+  - STRONG BUY opportunities section highlighting best trades
+  - Stock detail modal with projections, confidence, risk assessment
+  - Search and filter functionality
+  - Mobile-responsive design
+- **FastAPI Backend**:
+  - `/api/market/overview` - Market statistics and index breakdown
+  - `/api/market/movers` - Top gainers and losers
+  - `/api/projections/summary` - Projections overview and sentiment
+  - `/api/projections/opportunities` - Filtered buy/sell opportunities
+  - `/api/stocks/{symbol}` - Detailed stock information
+  - `/api/stocks/{symbol}/historical` - Historical price data
+  - Auto-generated API documentation (Swagger/ReDoc)
+  - CORS support for local development
+  - Data caching and optimization
+- **React Frontend**:
+  - TypeScript for type safety
+  - TailwindCSS for modern styling
+  - Recharts for data visualization
+  - Headless UI for accessible modals
+  - Custom hooks for data fetching
+  - Responsive design for all screen sizes
+- **Developer Tools**:
+  - Startup scripts for Windows (`.bat`) and Unix (`.sh`)
+  - Comprehensive dashboard documentation
+  - Vite for fast development and builds
+
+### Changed
+
+- Updated main README with dashboard quick start
+- Enhanced project structure with dashboard folder
 
 ## [0.2.0] - 2026-01-07
 
