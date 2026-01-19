@@ -33,9 +33,9 @@ class StockTrackerWorkflow:
     It returns structured data that can be consumed by any interface (CLI, Web, API).
     """
     
-    def __init__(self):
+    def __init__(self, include_profile: bool = True):
         """Initialize workflow components."""
-        self.fetcher = StockDataFetcher()
+        self.fetcher = StockDataFetcher(include_profile=include_profile)
         self.storage = DataStorage()
         self.analyzer = StockAnalyzer()
         self.ai_summarizer = AISummarizer()

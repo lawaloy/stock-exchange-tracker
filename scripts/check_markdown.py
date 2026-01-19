@@ -51,7 +51,14 @@ def check_markdown_with_markdownlint(files, fix=False):
         cmd.extend([str(f) for f in files])
         
         # On Windows, use shell=True to find .cmd files
-        result = subprocess.run(cmd, capture_output=True, text=True, shell=True)
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            shell=True,
+        )
         
         if result.returncode == 0:
             print(f"All {len(files)} markdown files are clean!")
@@ -98,6 +105,12 @@ def check_markdown_with_python(files):
 
 
 def main():
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
     parser = argparse.ArgumentParser(
         description="Check markdown files for linting errors"
     )

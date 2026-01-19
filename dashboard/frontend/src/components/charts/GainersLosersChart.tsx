@@ -1,6 +1,7 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import type { StockMover } from '../../types';
+import CompanyLogo from '../common/CompanyLogo';
 
 interface GainersLosersChartProps {
   gainers: StockMover[];
@@ -47,6 +48,23 @@ const GainersLosersChart: React.FC<GainersLosersChartProps> = ({ gainers, losers
           </Bar>
         </BarChart>
       </ResponsiveContainer>
+      <div className="mt-4 grid grid-cols-1 gap-2">
+        {data.map((item) => (
+          <div
+            key={`${item.symbol}-${item.type}`}
+            className="flex items-center justify-between rounded-md border border-slate-200 px-3 py-2 text-sm"
+          >
+            <div className="flex items-center gap-2">
+              <CompanyLogo symbol={item.symbol} size={20} />
+              <span className="font-medium text-slate-900">{item.symbol}</span>
+            </div>
+            <span className={item.change >= 0 ? 'text-green-600' : 'text-red-600'}>
+              {item.change >= 0 ? '+' : ''}
+              {item.change.toFixed(2)}%
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

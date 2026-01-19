@@ -28,7 +28,7 @@ pip install -r requirements.txt
 
 # Start the server
 python main.py
-```
+```text
 
 Backend will run on `http://localhost:8000`
 
@@ -42,7 +42,7 @@ npm install
 
 # Start the dev server
 npm run dev
-```
+```text
 
 Frontend will run on `http://localhost:3000`
 
@@ -55,6 +55,7 @@ Navigate to `http://localhost:3000` in your browser.
 ### Phase 1 MVP (Implemented)
 
 ✅ **Dashboard Overview**
+
 - Market overview with KPI cards
 - Top gainers/losers chart
 - Recommendation distribution pie chart
@@ -63,6 +64,7 @@ Navigate to `http://localhost:3000` in your browser.
 - Stock detail modal
 
 ✅ **API Endpoints**
+
 - `/api/market/overview` - Market statistics
 - `/api/market/movers` - Top gainers/losers
 - `/api/projections/summary` - Projections overview
@@ -71,6 +73,7 @@ Navigate to `http://localhost:3000` in your browser.
 - `/api/stocks/{symbol}/historical` - Historical data
 
 ✅ **Technologies**
+
 - FastAPI backend with pandas data loading
 - React 18 + TypeScript frontend
 - TailwindCSS for styling
@@ -79,7 +82,7 @@ Navigate to `http://localhost:3000` in your browser.
 
 ## Project Structure
 
-```
+```text
 dashboard/
 ├── backend/              # FastAPI Backend
 │   ├── main.py          # Entry point
@@ -100,6 +103,7 @@ dashboard/
 ## API Documentation
 
 With the backend running, visit:
+
 - Swagger UI: `http://localhost:8000/docs`
 - ReDoc: `http://localhost:8000/redoc`
 
@@ -122,12 +126,14 @@ npm run dev
 ### Build for Production
 
 **Backend:**
+
 ```bash
 cd dashboard/backend
 # Use the Dockerfile in the root or deploy to Railway/Render/Fly.io
 ```
 
 **Frontend:**
+
 ```bash
 cd dashboard/frontend
 npm run build
@@ -137,37 +143,44 @@ npm run build
 ## Environment Variables
 
 **Backend:**
+
 - `DATA_DIR` - Path to data directory (defaults to `../../data`)
 - `CORS_ORIGINS` - Allowed CORS origins (defaults to localhost:3000)
 
 **Frontend:**
+
 - `VITE_API_URL` - Backend API URL (defaults to `http://localhost:8000`)
 
 ## Troubleshooting
 
 ### Backend Issues
 
-**"No data files found"**
+#### "No data files found"
+
 - Make sure you've run the stock tracker at least once to generate data files
 - Check that the `data/` directory exists in the project root
 
-**CORS errors**
+#### CORS errors
+
 - Backend allows localhost:3000 by default
 - For production, update CORS settings in `backend/main.py`
 
 ### Frontend Issues
 
-**"Failed to fetch"**
+#### "Failed to fetch"
+
 - Make sure the backend is running on port 8000
 - Check browser console for specific errors
 
-**Components not styling correctly**
+#### Components not styling correctly
+
 - Run `npm install` to ensure all dependencies are installed
 - TailwindCSS requires PostCSS - check that postcss.config.js exists
 
 ## What's Next?
 
 See [DASHBOARD_DESIGN.md](../docs/DASHBOARD_DESIGN.md) for planned Phase 2 features:
+
 - Historical trends page
 - Dark mode
 - Mobile optimization

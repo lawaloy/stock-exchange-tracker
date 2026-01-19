@@ -41,6 +41,17 @@ export const formatMarketCap = (marketCap: number): string => {
 };
 
 export const formatDate = (dateStr: string): string => {
+  const parts = dateStr.split('-').map(Number);
+  if (parts.length === 3 && parts.every((value) => !Number.isNaN(value))) {
+    const [year, month, day] = parts;
+    const date = new Date(year, month - 1, day);
+    return new Intl.DateTimeFormat('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    }).format(date);
+  }
+
   const date = new Date(dateStr);
   return new Intl.DateTimeFormat('en-US', {
     month: 'short',

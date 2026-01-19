@@ -5,18 +5,22 @@
 ### Backend API (FastAPI)
 
 **Market Endpoints:**
+
 - ✅ `GET /api/market/overview` - Returns total stocks, gainers/losers, average changes, index breakdown
 - ✅ `GET /api/market/movers` - Returns top gainers or losers with configurable limit
 
 **Projections Endpoints:**
+
 - ✅ `GET /api/projections/summary` - Returns projection statistics, sentiment, recommendations distribution
 - ✅ `GET /api/projections/opportunities` - Returns filtered opportunities by recommendation type
 
 **Stock Endpoints:**
+
 - ✅ `GET /api/stocks/{symbol}` - Returns detailed stock data with projections and technical indicators
 - ✅ `GET /api/stocks/{symbol}/historical` - Returns historical data for a stock over N days
 
 **Infrastructure:**
+
 - ✅ Automatic API documentation (Swagger UI at `/docs`, ReDoc at `/redoc`)
 - ✅ CORS support for local development
 - ✅ Data caching with in-memory storage
@@ -27,6 +31,7 @@
 ### Frontend Dashboard (React + TypeScript)
 
 **Dashboard Page:**
+
 - ✅ 4 KPI cards showing key metrics (stocks tracked, confidence, expected move, strong buys)
 - ✅ Top movers bar chart (gainers and losers)
 - ✅ Recommendation distribution pie chart
@@ -34,6 +39,7 @@
 - ✅ Complete stock table with all projections
 
 **Interactive Features:**
+
 - ✅ Search stocks by symbol or name
 - ✅ Filter by recommendation type (All/BUY/HOLD/SELL)
 - ✅ Sortable table columns
@@ -41,6 +47,7 @@
 - ✅ Click any stock to open detail modal
 
 **Stock Detail Modal:**
+
 - ✅ Current price and daily change
 - ✅ 5-day projection with target price
 - ✅ Recommendation badge (STRONG BUY to STRONG SELL)
@@ -50,6 +57,7 @@
 - ✅ Key metrics (volume, market cap, momentum, volatility)
 
 **UI/UX:**
+
 - ✅ Modern, clean design with TailwindCSS
 - ✅ Responsive layout (mobile, tablet, desktop)
 - ✅ Color-coded indicators (green for positive, red for negative)
@@ -112,12 +120,14 @@
 ## Planned for Phase 2 (Future)
 
 ### Historical Analysis
+
 - ⏳ Historical trends page
 - ⏳ Time-series charts with zoom
 - ⏳ Projection accuracy tracking
 - ⏳ Compare multiple stocks
 
 ### UX Enhancements
+
 - ⏳ Dark mode toggle
 - ⏳ Watchlist feature
 - ⏳ Export to CSV/Excel
@@ -125,6 +135,7 @@
 - ⏳ Enhanced mobile UI
 
 ### Advanced Features
+
 - ⏳ Real-time WebSocket updates
 - ⏳ User authentication
 - ⏳ Multiple portfolios
@@ -135,6 +146,7 @@
 ## Technology Stack
 
 **Backend:**
+
 - FastAPI 0.128.0
 - Python 3.12+
 - Pandas 2.0+
@@ -142,6 +154,7 @@
 - Uvicorn (ASGI server)
 
 **Frontend:**
+
 - React 18.2
 - TypeScript 5.3
 - Vite 5.0
@@ -152,6 +165,7 @@
 - Heroicons 2.1
 
 **Development:**
+
 - Hot reload for both frontend and backend
 - Type checking with TypeScript
 - Auto-generated API docs
@@ -159,7 +173,7 @@
 
 ## File Structure
 
-```
+```text
 dashboard/
 ├── backend/                  # FastAPI Backend
 │   ├── main.py              # Entry point

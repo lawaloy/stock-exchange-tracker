@@ -15,11 +15,12 @@ This tool automatically:
 
 **Run time**: ~4 minutes per day on the free tier
 
-### 🎉 NEW: Web Dashboard (v0.3.0)
+### NEW: Web Dashboard (v0.3.0)
 
 **Visual, interactive dashboard** is now available! Explore stock data, projections, and recommendations in a modern React interface.
 
 **Quick Start:**
+
 ```bash
 # Start backend
 cd dashboard/backend && python main.py

@@ -21,15 +21,17 @@ logger = setup_logger("data_fetcher")
 class StockDataFetcher:
     """Fetches and processes stock market data using official APIs."""
     
-    def __init__(self, api_client: Optional[FinnhubClient] = None):
+    def __init__(self, api_client: Optional[FinnhubClient] = None, include_profile: bool = True):
         """
         Initialize data fetcher.
         
         Args:
             api_client: Optional FinnhubClient instance (creates new one if not provided)
+            include_profile: Whether to fetch company profile data (name, market cap)
         """
         self.today = datetime.now().date()
         self.yesterday = self.today - timedelta(days=1)
+        self.include_profile = include_profile
         
         try:
             self.api_client = api_client or FinnhubClient()
@@ -54,7 +56,7 @@ class StockDataFetcher:
         """
         for attempt in range(max_retries):
             try:
-                data = self.api_client.get_stock_data(symbol)
+                data = self.api_client.get_stock_data(symbol, include_profile=self.include_profile)
                 return data
             except Exception as e:
                 if attempt < max_retries - 1:

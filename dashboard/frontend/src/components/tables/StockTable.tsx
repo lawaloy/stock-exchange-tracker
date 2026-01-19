@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { formatPrice, formatPercentage, getRecommendationColor, getRiskColor } from '../../utils/formatters';
+import CompanyLogo from '../common/CompanyLogo';
 import type { Opportunity } from '../../types';
 
 interface StockTableProps {
@@ -84,7 +85,10 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onStockClick }) => {
                   {startIndex + index + 1}
                 </td>
                 <td className="px-4 py-3 text-sm font-medium text-slate-900">
-                  {stock.symbol}
+                  <div className="flex items-center gap-2">
+                    <CompanyLogo symbol={stock.symbol} name={stock.name} size={20} />
+                    <span>{stock.symbol}</span>
+                  </div>
                 </td>
                 <td className="px-4 py-3 text-sm text-slate-600 max-w-xs truncate">
                   {stock.name}

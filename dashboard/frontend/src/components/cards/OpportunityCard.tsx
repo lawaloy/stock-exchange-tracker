@@ -1,5 +1,6 @@
 import React from 'react';
 import { formatPrice, formatPercentage, getRiskColor, getTrendIcon } from '../../utils/formatters';
+import CompanyLogo from '../common/CompanyLogo';
 import type { Opportunity } from '../../types';
 
 interface OpportunityCardProps {
@@ -8,13 +9,6 @@ interface OpportunityCardProps {
 }
 
 const OpportunityCard: React.FC<OpportunityCardProps> = ({ opportunity, onClick }) => {
-  const getRecommendationEmoji = (rec: string) => {
-    if (rec.includes('STRONG BUY')) return '🟢';
-    if (rec.includes('BUY')) return '🟢';
-    if (rec.includes('SELL')) return '🔴';
-    return '⚪';
-  };
-
   return (
     <div
       className="card p-4 cursor-pointer hover:border-blue-300"
@@ -22,9 +16,9 @@ const OpportunityCard: React.FC<OpportunityCardProps> = ({ opportunity, onClick 
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <span className="text-2xl">{getRecommendationEmoji(opportunity.trend)}</span>
           <div>
             <div className="flex items-center space-x-2">
+              <CompanyLogo symbol={opportunity.symbol} name={opportunity.name} size={24} />
               <span className="font-semibold text-lg">{opportunity.symbol}</span>
               <span className="text-sm text-slate-600">{opportunity.name}</span>
             </div>

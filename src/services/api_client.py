@@ -295,10 +295,11 @@ class FinnhubClient:
             logger.debug(f"Error fetching screening data for {symbol}: {e}")
             return None
     
-    def get_stock_data(self, symbol: str) -> Optional[Dict]:
+    def get_stock_data(self, symbol: str, include_profile: bool = True) -> Optional[Dict]:
         """
-        Get comprehensive stock data (quote + profile only - 2 API calls).
-        Use this for final data after screening.
+        Get stock data for a symbol.
+        By default includes company profile (quote + profile = 2 API calls).
+        Set include_profile=False for faster quote-only refreshes.
         
         Args:
             symbol: Stock ticker symbol
@@ -314,12 +315,14 @@ class FinnhubClient:
                 logger.debug(f"No quote data for {symbol}")
                 return None
             
-            # Get company profile (name, market cap) - 1 API call
-            try:
-                profile = self.get_company_profile(symbol)
-            except Exception as e:
-                logger.debug(f"Could not fetch profile for {symbol}: {e}")
-                profile = {}
+            profile = {}
+            if include_profile:
+                # Get company profile (name, market cap) - 1 API call
+                try:
+                    profile = self.get_company_profile(symbol)
+                except Exception as e:
+                    logger.debug(f"Could not fetch profile for {symbol}: {e}")
+                    profile = {}
             
             # Use previous close from quote (no need for candles)
             current_price = quote.get("c", 0)
@@ -347,7 +350,11 @@ class FinnhubClient:
             logger.warning(f"Error fetching data for {symbol}: {e}")
             return None
     
-    def batch_get_stock_data(self, symbols: List[str]) -> Dict[str, Optional[Dict]]:
+    def batch_get_stock_data(
+        self,
+        symbols: List[str],
+        include_profile: bool = True
+    ) -> Dict[str, Optional[Dict]]:
         """
         Get stock data for multiple symbols efficiently.
         Respects rate limits automatically.
@@ -361,7 +368,7 @@ class FinnhubClient:
         results = {}
         
         for symbol in symbols:
-            results[symbol] = self.get_stock_data(symbol)
+            results[symbol] = self.get_stock_data(symbol, include_profile=include_profile)
         
         return results
 

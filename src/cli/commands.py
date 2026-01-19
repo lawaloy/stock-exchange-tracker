@@ -152,6 +152,8 @@ def main():
                        help='Limit to top N stocks by volume (e.g. --top-n 50 for day trading)')
     parser.add_argument('--no-screener', action='store_true',
                        help='Disable stock screener')
+    parser.add_argument('--quote-only', action='store_true',
+                       help='Fetch quotes only (skip company profile for faster refresh)')
     
     args = parser.parse_args()
     
@@ -164,7 +166,7 @@ def main():
     
     try:
         # Create and run workflow
-        workflow = StockTrackerWorkflow()
+        workflow = StockTrackerWorkflow(include_profile=not args.quote_only)
         result = workflow.run(use_screener=not args.no_screener, top_n_stocks=args.top_n)
         
         # Display results
