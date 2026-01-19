@@ -15,9 +15,23 @@ This tool automatically:
 
 **Run time**: ~4 minutes per day on the free tier
 
-### Coming Soon: Web Dashboard
+### NEW: Web Dashboard (v0.3.0)
 
-**Visual, interactive dashboard** for exploring stock data and projections. See [Dashboard Design](docs/DASHBOARD_DESIGN.md) for details.
+**Visual, interactive dashboard** is now available! Explore stock data, projections, and recommendations in a modern React interface.
+
+**Quick Start:**
+
+```bash
+# Start backend
+cd dashboard/backend && python main.py
+
+# Start frontend (in another terminal)
+cd dashboard/frontend && npm install && npm run dev
+```
+
+Visit `http://localhost:3000` to see it in action!
+
+See [Dashboard README](dashboard/README.md) for full setup instructions.
 
 ---
 

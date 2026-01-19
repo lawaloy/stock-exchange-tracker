@@ -392,20 +392,20 @@ GET /api/market/movers?type=losers&limit=10
 │ │ ══ -5.8% MSTR              │ │   9.6% SELL                 │ │
 │ └────────────────────────────┘ └────────────────────────────┘ │
 │                                                                  │
-│ 🎯 STRONG BUY Opportunities (11)          [View All →]          │
+│ STRONG BUY Opportunities (11)          [View All →]          │
 │ ┌──────────────────────────────────────────────────────────┐   │
-│ │ 🟢 APP  $647.72 → $655.91 (+1.3%)  90% conf  Low risk   │   │
-│ │ 🟢 MU   $345.09 → $349.86 (+1.4%)  90% conf  Low risk   │   │
-│ │ 🟢 KLAC $1400 → $1420 (+1.4%)      90% conf  Low risk   │   │
+│ │ APP  $647.72 → $655.91 (+1.3%)  90% conf  Low risk   │   │
+│ │ MU   $345.09 → $349.86 (+1.4%)  90% conf  Low risk   │   │
+│ │ KLAC $1400 → $1420 (+1.4%)      90% conf  Low risk   │   │
 │ └──────────────────────────────────────────────────────────┘   │
 │                                                                  │
-│ 📊 All Stocks                                                   │
+│ All Stocks                                                   │
 │ [Search: ___] [Filter: All ▼] [Sort: Confidence ▼]             │
 │ ┌────┬────────┬────────┬────────┬──────┬────────┬────────┐    │
 │ │ #  │ Symbol │ Price  │ Target │ Chg  │ Conf   │ Rec    │    │
 │ ├────┼────────┼────────┼────────┼──────┼────────┼────────┤    │
-│ │ 1  │ APP    │ 647.72 │ 655.91 │ +1.3%│ 90%    │ 🟢 BUY │    │
-│ │ 2  │ MU     │ 345.09 │ 349.86 │ +1.4%│ 90%    │ 🟢 BUY │    │
+│ │ 1  │ APP    │ 647.72 │ 655.91 │ +1.3%│ 90%    │ BUY │    │
+│ │ 2  │ MU     │ 345.09 │ 349.86 │ +1.4%│ 90%    │ BUY │    │
 │ └────┴────────┴────────┴────────┴──────┴────────┴────────┘    │
 │ [1] [2] [3] ... [18] →                                         │
 └─────────────────────────────────────────────────────────────────┘
@@ -428,7 +428,7 @@ GET /api/market/movers?type=losers&limit=10
 
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
-│ 📈 Projections - 5 Day Outlook                                  │
+│ Projections - 5 Day Outlook                                  │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                  │
 │ Target Date: January 16, 2026  |  177 Projections Generated    │
@@ -437,14 +437,14 @@ GET /api/market/movers?type=losers&limit=10
 │ │ [Strong Buy] [Buy] [Hold] [Sell] [Strong Sell]            │  │
 │ └────────────────────────────────────────────────────────────┘  │
 │                                                                  │
-│ 🎯 STRONG BUY (11 stocks)                                       │
+│ STRONG BUY (11 stocks)                                       │
 │                                                                  │
 │ ┌────────────────────────────────────────────────────────────┐ │
 │ │ APP - AppLovin Corp                          [View Detail] │ │
 │ │ ───────────────────────────────────────────────────────────│ │
 │ │ Current: $647.72  →  Target: $655.91  (+1.3%)             │ │
 │ │ Confidence: ████████████████████ 90%                       │ │
-│ │ Risk: 🟢 Low  |  Trend: ↗ Bullish  |  Momentum: 85.2      │ │
+│ │ Risk: Low  |  Trend: ↗ Bullish  |  Momentum: 85.2      │ │
 │ │                                                             │ │
 │ │ Reason: Strong +5.1% gain; very strong momentum;           │ │
 │ │         low volume caution                                 │ │
@@ -481,7 +481,7 @@ GET /api/market/movers?type=losers&limit=10
 │ Current: $259.37  (+0.33 / +0.13%)                              │
 │ Target:  $262.50  (+$3.13 / +1.2%)                              │
 │                                                                  │
-│ 🟢 BUY  |  Confidence: 75%  |  Risk: Low                        │
+│ BUY  |  Confidence: 75%  |  Risk: Low                        │
 │                                                                  │
 │ ┌─ Tabs ───────────────────────────────────────────────────┐   │
 │ │ [Overview] [Historical] [Technical] [News]               │   │
@@ -533,7 +533,7 @@ GET /api/market/movers?type=losers&limit=10
 
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
-│ 📊 Historical Trends                                            │
+│ Historical Trends                                            │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                  │
 │ Date Range: [Jan 1, 2026 ▼] to [Jan 11, 2026 ▼]   [Apply]     │
@@ -589,27 +589,27 @@ GET /api/market/movers?type=losers&limit=10
 
 **Core Dashboard:**
 
-- ✅ Market overview (KPI cards)
-- ✅ Top gainers/losers chart
-- ✅ Recommendation distribution pie chart
-- ✅ STRONG BUY opportunities section
-- ✅ Filterable stock table
-- ✅ Basic stock detail view
+- Market overview (KPI cards)
+- Top gainers/losers chart
+- Recommendation distribution pie chart
+- STRONG BUY opportunities section
+- Filterable stock table
+- Basic stock detail view
 
 **API:**
 
-- ✅ `/api/market/overview`
-- ✅ `/api/projections/summary`
-- ✅ `/api/projections/opportunities`
-- ✅ `/api/stocks/{symbol}`
-- ✅ `/api/market/movers`
+- `/api/market/overview`
+- `/api/projections/summary`
+- `/api/projections/opportunities`
+- `/api/stocks/{symbol}`
+- `/api/market/movers`
 
 **Tech:**
 
-- ✅ FastAPI backend reading CSV/JSON
-- ✅ React frontend with TailwindCSS
-- ✅ Recharts for visualizations
-- ✅ Local development setup
+- FastAPI backend reading CSV/JSON
+- React frontend with TailwindCSS
+- Recharts for visualizations
+- Local development setup
 
 ---
 
@@ -617,25 +617,25 @@ GET /api/market/movers?type=losers&limit=10
 
 **Historical Analysis:**
 
-- ✅ Historical trends page
-- ✅ `/api/stocks/{symbol}/historical`
-- ✅ Projection accuracy tracking
-- ✅ Time-series charts with zoom
-- ✅ Comparison tool (compare 2+ stocks)
+- Historical trends page
+- `/api/stocks/{symbol}/historical`
+- Projection accuracy tracking
+- Time-series charts with zoom
+- Comparison tool (compare 2+ stocks)
 
 **Improved UX:**
 
-- ✅ Dark mode toggle
-- ✅ Watchlist feature
-- ✅ Export data (CSV/JSON)
-- ✅ Keyboard shortcuts
-- ✅ Mobile responsive design
+- Dark mode toggle
+- Watchlist feature
+- Export data (CSV/JSON)
+- Keyboard shortcuts
+- Mobile responsive design
 
 **Performance:**
 
-- ✅ Data caching (in-memory)
-- ✅ Lazy loading for tables
-- ✅ Optimized chart rendering
+- Data caching (in-memory)
+- Lazy loading for tables
+- Optimized chart rendering
 
 ---
 

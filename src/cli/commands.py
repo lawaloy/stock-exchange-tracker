@@ -145,15 +145,29 @@ def display_results(result: dict):
 
 def main():
     """CLI entry point for stock tracker."""
+    import argparse
+    
+    parser = argparse.ArgumentParser(description='Stock Exchange Tracker - Day Trading Optimized')
+    parser.add_argument('--top-n', type=int, default=None, 
+                       help='Limit to top N stocks by volume (e.g. --top-n 50 for day trading)')
+    parser.add_argument('--no-screener', action='store_true',
+                       help='Disable stock screener')
+    parser.add_argument('--quote-only', action='store_true',
+                       help='Fetch quotes only (skip company profile for faster refresh)')
+    
+    args = parser.parse_args()
+    
     logger.info("=" * 60)
     logger.info("Stock Exchange Tracker - Daily Data Collection")
+    if args.top_n:
+        logger.info(f"Day Trading Mode: Top {args.top_n} stocks by volume")
     logger.info("=" * 60)
     logger.debug("Starting CLI interface")
     
     try:
         # Create and run workflow
-        workflow = StockTrackerWorkflow()
-        result = workflow.run(use_screener=True)
+        workflow = StockTrackerWorkflow(include_profile=not args.quote_only)
+        result = workflow.run(use_screener=not args.no_screener, top_n_stocks=args.top_n)
         
         # Display results
         display_results(result)

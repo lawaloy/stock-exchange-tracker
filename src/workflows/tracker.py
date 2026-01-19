@@ -33,21 +33,22 @@ class StockTrackerWorkflow:
     It returns structured data that can be consumed by any interface (CLI, Web, API).
     """
     
-    def __init__(self):
+    def __init__(self, include_profile: bool = True):
         """Initialize workflow components."""
-        self.fetcher = StockDataFetcher()
+        self.fetcher = StockDataFetcher(include_profile=include_profile)
         self.storage = DataStorage()
         self.analyzer = StockAnalyzer()
         self.ai_summarizer = AISummarizer()
         self.projector = StockProjector()
         logger.debug("Workflow components initialized")
     
-    def run(self, use_screener: bool = True) -> Dict[str, Any]:
+    def run(self, use_screener: bool = True, top_n_stocks: Optional[int] = None) -> Dict[str, Any]:
         """
         Execute the complete stock tracking workflow.
         
         Args:
             use_screener: Whether to use stock screener for filtering
+            top_n_stocks: If specified, limit to top N stocks by volume (for day trading)
         
         Returns:
             Dictionary containing:
@@ -66,7 +67,7 @@ class StockTrackerWorkflow:
             
             # Step 1: Fetch data
             logger.info("Step 1: Fetching stock data")
-            fetch_result = self._fetch_data(use_screener)
+            fetch_result = self._fetch_data(use_screener, top_n_stocks)
             
             if not fetch_result["success"]:
                 return fetch_result
@@ -132,12 +133,14 @@ class StockTrackerWorkflow:
                 "error": str(e)
             }
     
-    def _fetch_data(self, use_screener: bool) -> Dict[str, Any]:
+    def _fetch_data(self, use_screener: bool, top_n_stocks: Optional[int] = None) -> Dict[str, Any]:
         """Fetch stock data from configured indices."""
         try:
             indices_to_track = get_indices_to_track()
             logger.info(f"Fetching data from indices: {', '.join(indices_to_track)}")
             logger.info(f"Stock screener enabled: {use_screener}")
+            if top_n_stocks:
+                logger.info(f"Day trading mode: Will select top {top_n_stocks} stocks by volume")
             
             all_index_data = self.fetcher.fetch_all_indices(use_screener=use_screener)
             
@@ -148,6 +151,17 @@ class StockTrackerWorkflow:
                 logger.info(f"  {index_name}: {len(data)} stocks fetched")
             
             logger.info(f"Total stocks fetched: {len(all_data)}")
+            
+            # Day trading optimization: Select top N by volume
+            if top_n_stocks and len(all_data) > top_n_stocks:
+                logger.info(f"Filtering to top {top_n_stocks} stocks by volume...")
+                # Sort by volume (highest first)
+                all_data_sorted = sorted(all_data, key=lambda x: x.get('volume', 0), reverse=True)
+                all_data = all_data_sorted[:top_n_stocks]
+                logger.info(f"Selected top {len(all_data)} most active stocks")
+                # Log top 5 stocks by volume
+                top_5_symbols = [f"{s['symbol']} ({s.get('volume', 0):,})" for s in all_data[:5]]
+                logger.debug(f"Top 5 by volume: {top_5_symbols}")
             
             if not all_data:
                 logger.warning("No data was fetched")
