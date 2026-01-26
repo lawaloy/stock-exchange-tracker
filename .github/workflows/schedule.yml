@@ -1,5 +1,8 @@
 name: Daily Stock Tracker
 
+permissions:
+  contents: read
+
 on:
   schedule:
     - cron: "0 16 * * *" # runs daily at 16:00 UTC
