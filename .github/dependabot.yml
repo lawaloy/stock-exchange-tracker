@@ -10,13 +10,25 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
+    groups:
+      npm-all:
+        patterns:
+          - "*"
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
+    groups:
+      pip-all:
+        patterns:
+          - "*"
   - package-ecosystem: "pip"
     directory: "/dashboard/backend"
     schedule:
       interval: "weekly"
       day: "monday"
+    groups:
+      pip-all:
+        patterns:
+          - "*"
