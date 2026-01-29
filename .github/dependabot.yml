@@ -6,6 +6,17 @@
 version: 2
 updates:
   - package-ecosystem: "npm" # See documentation for possible values
-    directory: "/" # Location of package manifests
+    directory: "/dashboard/frontend" # Location of package manifests
     schedule:
       interval: "weekly"
+      day: "monday"
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+  - package-ecosystem: "pip"
+    directory: "/dashboard/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
