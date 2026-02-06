@@ -8,6 +8,7 @@ Professional implementation with proper rate limiting and error handling.
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 import time
+import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from .api_client import FinnhubClient
@@ -69,12 +70,17 @@ class StockDataFetcher:
     
     # Legacy method removed - use fetch_all_indices() instead
     
-    def fetch_all_indices(self, use_screener: bool = True) -> Dict[str, List[Dict]]:
+    def fetch_all_indices(
+        self,
+        use_screener: bool = True,
+        max_symbols_per_index: Optional[int] = None
+    ) -> Dict[str, List[Dict]]:
         """
         Fetch data for all configured indices.
         
         Args:
             use_screener: If True, screen stocks first and only fetch qualified ones
+            max_symbols_per_index: If set, limit symbols per index before fetching
         
         Returns:
             Dictionary mapping index names to their stock data
@@ -92,6 +98,10 @@ class StockDataFetcher:
             if len(symbols) > 100:
                 logger.info(f"  Capping symbols for {index_name} to first 100 (of {len(symbols)})")
                 symbols = symbols[:100]
+            
+            if max_symbols_per_index and len(symbols) > max_symbols_per_index:
+                logger.info(f"  Limiting symbols for {index_name} to first {max_symbols_per_index}")
+                symbols = symbols[:max_symbols_per_index]
             
             if not symbols:
                 logger.warning(f"Could not fetch symbols for {index_name}")
@@ -126,7 +136,11 @@ class StockDataFetcher:
             results = []
             completed = 0
             failed_count = 0
-            max_workers = 2  # Most conservative for 60 calls/min limit (3 calls per stock)
+            try:
+                max_workers = int(os.getenv("STOCK_FETCH_MAX_WORKERS", "2"))
+            except ValueError:
+                max_workers = 2
+            max_workers = max(1, min(4, max_workers))
             
             logger.info(f"  Fetching data for {len(symbols)} stocks in parallel ({max_workers} workers)...")
             

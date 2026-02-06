@@ -5,6 +5,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 import sys
+import os
 
 # Add parent directory to path to import from src
 sys.path.append(str(Path(__file__).parent.parent.parent))
@@ -18,9 +19,19 @@ app = FastAPI(
 )
 
 # CORS configuration for local development
+default_origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+cors_env = os.getenv("CORS_ORIGINS", "")
+env_origins = [origin.strip() for origin in cors_env.split(",") if origin.strip()]
+origins = env_origins or default_origins
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

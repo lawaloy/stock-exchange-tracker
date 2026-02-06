@@ -12,25 +12,34 @@ const Header: React.FC<HeaderProps> = ({ dataDate, onRefreshComplete, onQuickRef
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshMessage, setRefreshMessage] = useState('');
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const lastMessageRef = useRef<string>('');
+
+  const updateMessage = (message: string) => {
+    if (lastMessageRef.current === message) return;
+    lastMessageRef.current = message;
+    setRefreshMessage(message);
+  };
 
   const handleQuickRefresh = () => {
-    setRefreshMessage('Reloading data...');
+    updateMessage('Reloading data...');
     onQuickRefresh?.();
     setTimeout(() => {
-      setRefreshMessage('');
+      if (!isRefreshing) {
+        updateMessage('');
+      }
     }, 1000);
   };
 
   const handleFullRefresh = async () => {
     setIsRefreshing(true);
-    setRefreshMessage('Reloading latest saved data...');
+    updateMessage('Reloading latest saved data...');
     onQuickRefresh?.();
 
     try {
-      setRefreshMessage('Fetching fresh data in the background...');
+      updateMessage('Fetching fresh data in the background...');
       // Trigger refresh
       const response = await api.post('/api/refresh');
-      setRefreshMessage(response.data.message);
+      updateMessage(response.data.message);
 
       // Poll for status
       pollIntervalRef.current = setInterval(async () => {
@@ -39,7 +48,7 @@ const Header: React.FC<HeaderProps> = ({ dataDate, onRefreshComplete, onQuickRef
           const status = statusRes.data;
 
           if (status.progress) {
-            setRefreshMessage(status.progress);
+            updateMessage(status.progress);
           }
 
           if (!status.is_running) {
@@ -50,14 +59,17 @@ const Header: React.FC<HeaderProps> = ({ dataDate, onRefreshComplete, onQuickRef
             setIsRefreshing(false);
 
             if (status.last_status === 'success') {
-              setRefreshMessage('✅ Data refresh complete!');
+              updateMessage('Data refreshed successfully!');
               setTimeout(() => {
-                setRefreshMessage('');
+                updateMessage('');
                 onRefreshComplete?.();
               }, 2000);
+            } else if (status.last_status === 'idle') {
+              updateMessage('');
             } else {
-              setRefreshMessage(`Refresh failed: ${status.progress}`);
-              setTimeout(() => setRefreshMessage(''), 5000);
+              const fallback = status.progress || 'Refresh failed. Please try again.';
+              updateMessage(`Refresh failed: ${fallback}`);
+              setTimeout(() => updateMessage(''), 5000);
             }
           }
         } catch (err) {
@@ -67,14 +79,14 @@ const Header: React.FC<HeaderProps> = ({ dataDate, onRefreshComplete, onQuickRef
 
     } catch (error) {
       console.error('Refresh error:', error);
-      setRefreshMessage('Failed to start refresh');
+      updateMessage('Failed to start refresh');
       setIsRefreshing(false);
-      setTimeout(() => setRefreshMessage(''), 5000);
+      setTimeout(() => updateMessage(''), 5000);
     }
   };
 
   const handleCancelRefresh = async () => {
-    setRefreshMessage('Cancelling refresh...');
+    updateMessage('Cancelling refresh...');
     try {
       await api.post('/api/refresh/cancel');
       if (pollIntervalRef.current) {
@@ -82,12 +94,12 @@ const Header: React.FC<HeaderProps> = ({ dataDate, onRefreshComplete, onQuickRef
         pollIntervalRef.current = null;
       }
       setIsRefreshing(false);
-      setRefreshMessage('Refresh cancelled.');
-      setTimeout(() => setRefreshMessage(''), 3000);
+      updateMessage('Refresh cancelled.');
+      setTimeout(() => updateMessage(''), 3000);
     } catch (error) {
       console.error('Cancel refresh error:', error);
-      setRefreshMessage('Failed to cancel refresh ');
-      setTimeout(() => setRefreshMessage(''), 5000);
+      updateMessage('Failed to cancel refresh ');
+      setTimeout(() => updateMessage(''), 5000);
     }
   };
 
@@ -107,11 +119,13 @@ const Header: React.FC<HeaderProps> = ({ dataDate, onRefreshComplete, onQuickRef
             )}
           </div>
           <div className="flex items-center space-x-4">
-            {refreshMessage && (
-              <div className="text-sm text-slate-600 max-w-xs truncate">
-                {refreshMessage}
-              </div>
-            )}
+            <div
+              className={`text-sm text-slate-600 max-w-xs truncate transition-opacity duration-200 ${
+                refreshMessage ? 'opacity-100' : 'opacity-0'
+              }`}
+            >
+              {refreshMessage || 'Status'}
+            </div>
             <button
               onClick={handleQuickRefresh}
               className="flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium bg-green-500 text-white hover:bg-green-600 transition-colors"

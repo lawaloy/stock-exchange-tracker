@@ -21,7 +21,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onDataLoaded }) => {
   const [strongBuyOpps, setStrongBuyOpps] = useState<Opportunity[]>([]);
   const [allOpportunities, setAllOpportunities] = useState<Opportunity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [secondaryLoading, setSecondaryLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [secondaryError, setSecondaryError] = useState<string | null>(null);
   const [selectedStock, setSelectedStock] = useState<string | null>(null);
 
   useEffect(() => {
@@ -31,50 +33,62 @@ const Dashboard: React.FC<DashboardProps> = ({ onDataLoaded }) => {
   const fetchDashboardData = async () => {
     setLoading(true);
     setError(null);
+    setSecondaryError(null);
     
     try {
-      // Fetch all data in parallel
-      const [
-        marketRes,
-        projectionsRes,
-        gainersRes,
-        losersRes,
-        strongBuyRes,
-        buyRes,
-        holdRes,
-        sellRes,
-        strongSellRes,
-      ] = await Promise.all([
+      // Phase 1: core data for fast initial render
+      const [marketRes, projectionsRes] = await Promise.all([
         marketApi.getOverview(),
         projectionsApi.getSummary(),
-        marketApi.getMovers('gainers', 10),
-        marketApi.getMovers('losers', 10),
-        projectionsApi.getOpportunities('STRONG_BUY', 50),
-        projectionsApi.getOpportunities('BUY', 50),
-        projectionsApi.getOpportunities('HOLD', 50),
-        projectionsApi.getOpportunities('SELL', 50),
-        projectionsApi.getOpportunities('STRONG_SELL', 50),
       ]);
 
       setMarketOverview(marketRes.data);
       setProjectionsSummary(projectionsRes.data);
-      setGainers(gainersRes.data.data);
-      setLosers(losersRes.data.data);
-      setStrongBuyOpps(strongBuyRes.data.opportunities);
-
-      // Combine all opportunities for the table
-      const combined = [
-        ...strongBuyRes.data.opportunities,
-        ...buyRes.data.opportunities,
-        ...holdRes.data.opportunities,
-        ...sellRes.data.opportunities,
-        ...strongSellRes.data.opportunities,
-      ];
-      setAllOpportunities(combined);
 
       // Notify parent of data date
       if (onDataLoaded && marketRes.data.date) {
         onDataLoaded(formatDate(marketRes.data.date));
+      }
+
+      // Phase 2: secondary data loads in background
+      setSecondaryLoading(true);
+      try {
+        const [
+          gainersRes,
+          losersRes,
+          strongBuyRes,
+          buyRes,
+          holdRes,
+          sellRes,
+          strongSellRes,
+        ] = await Promise.all([
+          marketApi.getMovers('gainers', 10),
+          marketApi.getMovers('losers', 10),
+          projectionsApi.getOpportunities('STRONG_BUY', 50),
+          projectionsApi.getOpportunities('BUY', 50),
+          projectionsApi.getOpportunities('HOLD', 50),
+          projectionsApi.getOpportunities('SELL', 50),
+          projectionsApi.getOpportunities('STRONG_SELL', 50),
+        ]);
+
+        setGainers(gainersRes.data.data);
+        setLosers(losersRes.data.data);
+        setStrongBuyOpps(strongBuyRes.data.opportunities);
+
+        // Combine all opportunities for the table
+        const combined = [
+          ...strongBuyRes.data.opportunities,
+          ...buyRes.data.opportunities,
+          ...holdRes.data.opportunities,
+          ...sellRes.data.opportunities,
+          ...strongSellRes.data.opportunities,
+        ];
+        setAllOpportunities(combined);
+      } catch (secondaryErr) {
+        console.error('Error fetching secondary data:', secondaryErr);
+        setSecondaryError('Some sections failed to load. You can retry.');
+      } finally {
+        setSecondaryLoading(false);
       }
 
     } catch (err) {
@@ -147,9 +161,23 @@ const Dashboard: React.FC<DashboardProps> = ({ onDataLoaded }) => {
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <GainersLosersChart gainers={gainers} losers={losers} />
+        {secondaryLoading ? (
+          <div className="bg-white border border-slate-200 rounded-lg p-6 animate-pulse">
+            <div className="h-5 w-32 bg-slate-200 rounded mb-4"></div>
+            <div className="h-48 bg-slate-200 rounded"></div>
+          </div>
+        ) : (
+          <GainersLosersChart gainers={gainers} losers={losers} />
+        )}
         {projectionsSummary?.recommendations && (
-          <SentimentPieChart recommendations={projectionsSummary.recommendations} />
+          secondaryLoading ? (
+            <div className="bg-white border border-slate-200 rounded-lg p-6 animate-pulse">
+              <div className="h-5 w-44 bg-slate-200 rounded mb-4"></div>
+              <div className="h-48 bg-slate-200 rounded-full mx-auto w-48"></div>
+            </div>
+          ) : (
+            <SentimentPieChart recommendations={projectionsSummary.recommendations} />
+          )
         )}
       </div>
 
@@ -160,29 +188,61 @@ const Dashboard: React.FC<DashboardProps> = ({ onDataLoaded }) => {
             STRONG BUY Opportunities ({strongBuyOpps.length})
           </h2>
         </div>
-        <div className="space-y-3">
-          {strongBuyOpps.slice(0, 5).map((opp) => (
-            <OpportunityCard
-              key={opp.symbol}
-              opportunity={opp}
-              onClick={() => setSelectedStock(opp.symbol)}
-            />
-          ))}
-        </div>
-        {strongBuyOpps.length > 5 && (
-          <div className="mt-4 text-center">
-            <p className="text-sm text-slate-600">
-              + {strongBuyOpps.length - 5} more opportunities (see table below)
-            </p>
+        {secondaryLoading ? (
+          <div className="space-y-3">
+            {[...Array(3)].map((_, idx) => (
+              <div key={idx} className="bg-white border border-slate-200 rounded-lg p-4 animate-pulse">
+                <div className="h-4 w-40 bg-slate-200 rounded mb-2"></div>
+                <div className="h-3 w-64 bg-slate-200 rounded"></div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <>
+            <div className="space-y-3">
+              {strongBuyOpps.slice(0, 5).map((opp) => (
+                <OpportunityCard
+                  key={opp.symbol}
+                  opportunity={opp}
+                  onClick={() => setSelectedStock(opp.symbol)}
+                />
+              ))}
+            </div>
+            {strongBuyOpps.length > 5 && (
+              <div className="mt-4 text-center">
+                <p className="text-sm text-slate-600">
+                  + {strongBuyOpps.length - 5} more opportunities (see table below)
+                </p>
+              </div>
+            )}
+          </>
+        )}
+        {secondaryError && (
+          <div className="mt-4 text-sm text-amber-700 bg-amber-50 border border-amber-200 px-3 py-2 rounded">
+            {secondaryError}
+            <button onClick={fetchDashboardData} className="ml-3 underline">
+              Retry
+            </button>
           </div>
         )}
       </div>
 
       {/* Stock Table */}
-      <StockTable
-        stocks={allOpportunities}
-        onStockClick={(symbol) => setSelectedStock(symbol)}
-      />
+      {secondaryLoading ? (
+        <div className="bg-white border border-slate-200 rounded-lg p-6 animate-pulse">
+          <div className="h-5 w-32 bg-slate-200 rounded mb-4"></div>
+          <div className="space-y-2">
+            {[...Array(6)].map((_, idx) => (
+              <div key={idx} className="h-4 bg-slate-200 rounded"></div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <StockTable
+          stocks={allOpportunities}
+          onStockClick={(symbol) => setSelectedStock(symbol)}
+        />
+      )}
 
       {/* Stock Detail Modal */}
       {selectedStock && (
