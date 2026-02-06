@@ -10,6 +10,7 @@ from ..storage.data_storage import DataStorage
 from ..analysis.analyzer import StockAnalyzer
 from ..analysis.ai_summarizer import AISummarizer
 from ..analysis.projector import StockProjector
+from ..alerts.alert_engine import AlertEngine
 from ..core.logger import setup_logger
 from ..core.config import get_indices_to_track
 from datetime import datetime
@@ -40,6 +41,7 @@ class StockTrackerWorkflow:
         self.analyzer = StockAnalyzer()
         self.ai_summarizer = AISummarizer()
         self.projector = StockProjector()
+        self.alert_engine = AlertEngine.from_config()
         logger.debug("Workflow components initialized")
     
     def run(self, use_screener: bool = True, top_n_stocks: Optional[int] = None) -> Dict[str, Any]:
@@ -102,6 +104,9 @@ class StockTrackerWorkflow:
                 projection_result["projections"],
                 projection_result["projection_summary"]
             )
+
+            # Step 7: Evaluate alerts (if configured)
+            self._run_alerts(all_data)
             
             logger.info("Workflow completed successfully")
             
@@ -132,6 +137,17 @@ class StockTrackerWorkflow:
                 "success": False,
                 "error": str(e)
             }
+
+    def _run_alerts(self, data: List[Dict]) -> None:
+        """Evaluate configured alerts against current data."""
+        if not self.alert_engine:
+            return
+        try:
+            events = self.alert_engine.evaluate(data)
+            if events:
+                logger.info(f"Alerts triggered: {len(events)}")
+        except Exception as e:
+            logger.warning(f"Alert evaluation failed: {e}")
     
     def _fetch_data(self, use_screener: bool, top_n_stocks: Optional[int] = None) -> Dict[str, Any]:
         """Fetch stock data from configured indices."""

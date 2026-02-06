@@ -1,0 +1,31 @@
+{
+  "alerts": [
+    {
+      "id": "alert_aapl_drop",
+      "name": "AAPL Price Drop",
+      "enabled": true,
+      "condition": {
+        "type": "price_threshold",
+        "symbol": "AAPL",
+        "operator": "less_than",
+        "value": 150.0
+      },
+      "notifications": ["log"],
+      "cooldown_minutes": 60
+    },
+    {
+      "id": "alert_high_volume_gainers",
+      "name": "High Volume Gainers",
+      "enabled": false,
+      "condition": {
+        "type": "screening_match",
+        "filters": {
+          "volume_threshold": 5000000,
+          "min_daily_change_pct": 5.0
+        }
+      },
+      "notifications": ["log"],
+      "cooldown_minutes": 1440
+    }
+  ]
+}

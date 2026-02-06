@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Publish to'
+        description: "Publish to"
         required: true
         type: choice
         options:
@@ -21,21 +21,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
-      
+          python-version: "3.12"
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -e .[dev]
-      
+
       - name: Run tests
         run: |
           pytest tests/ -v
-      
+
       - name: Check markdown files
         run: |
           npm install -g markdownlint-cli
@@ -46,23 +46,38 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
-      
+          python-version: "3.12"
+
+      - name: Set version from release tag
+        if: github.event_name == 'release'
+        run: |
+          python - <<'PY'
+          import configparser, os
+          tag = os.environ["GITHUB_REF_NAME"]  # e.g. v0.2.1
+          version = tag.lstrip("v")
+          cfg = configparser.ConfigParser()
+          cfg.read("setup.cfg")
+          cfg["metadata"]["version"] = version
+          with open("setup.cfg", "w") as f:
+            cfg.write(f)
+          print("Version set to", version)
+          PY
+
       - name: Install build tools
         run: |
           python -m pip install --upgrade pip
           pip install build twine
-      
+
       - name: Build package
         run: python -m build
-      
+
       - name: Check package
         run: twine check dist/*
-      
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -73,18 +88,18 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     permissions:
-      id-token: write  # Required for trusted publishing
+      id-token: write # Required for trusted publishing
     environment:
       name: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'pypi' }}
       url: ${{ github.event_name == 'workflow_dispatch' && inputs.environment == 'testpypi' && 'https://test.pypi.org/project/stock-exchange-tracker/' || 'https://pypi.org/project/stock-exchange-tracker/' }}
-    
+
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist/
-      
+
       - name: Publish to Test PyPI
         if: github.event_name == 'workflow_dispatch' && inputs.environment == 'testpypi'
         uses: pypa/gh-action-pypi-publish@release/v1
@@ -92,11 +107,9 @@ jobs:
           repository-url: https://test.pypi.org/legacy/
           password: ${{ secrets.TEST_PYPI_API_TOKEN }}
           skip-existing: true
-      
+
       - name: Publish to PyPI
         if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.environment == 'pypi')
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
-
-
