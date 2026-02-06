@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 from datetime import datetime
 import threading
+import time
 
 router = APIRouter()
 
@@ -16,8 +17,8 @@ router = APIRouter()
 refresh_status = {
     "is_running": False,
     "last_refresh": None,
-    "last_status": None,
-    "progress": None
+    "last_status": "idle",
+    "progress": "Idle."
 }
 
 _refresh_process: subprocess.Popen | None = None
@@ -44,7 +45,7 @@ def run_stock_tracker():
     try:
         refresh_status["is_running"] = True
         refresh_status["progress"] = "Starting stock tracker..."
-        refresh_status["last_status"] = None
+        refresh_status["last_status"] = "running"
         _refresh_cancel_event.clear()
         
         # Get the project root (3 levels up from this file)
@@ -57,12 +58,12 @@ def run_stock_tracker():
             refresh_status["is_running"] = False
             return
         
-        # Run the stock tracker (default to top 50 for day-trading mode)
-        top_n_value = os.getenv("REFRESH_TOP_N", "50")
+        # Run the stock tracker (default to top 10 for faster refresh)
+        top_n_value = os.getenv("REFRESH_TOP_N", "10")
         try:
             top_n = max(0, int(top_n_value))
         except ValueError:
-            top_n = 50
+            top_n = 10
 
         command = [sys.executable, str(main_script)]
         if top_n:
@@ -76,24 +77,55 @@ def run_stock_tracker():
         if no_screener:
             command.append("--no-screener")
 
-        refresh_status["progress"] = "Fetching latest data..."
+        refresh_status["progress"] = "Refreshing..."
+
+        env = os.environ.copy()
+        env["STOCK_FETCH_MAX_WORKERS"] = os.getenv("REFRESH_MAX_WORKERS", "1")
 
         _refresh_process = subprocess.Popen(
             command,
             cwd=str(project_root),
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            text=True
+            text=True,
+            env=env
         )
 
+        max_seconds = int(os.getenv("REFRESH_TIMEOUT_SECONDS", "600"))
+        start_time = time.time()
+
+        while True:
+            if _refresh_cancel_event.is_set():
+                refresh_status["last_status"] = "cancelled"
+                refresh_status["progress"] = "Refresh cancelled."
+                if _refresh_process.poll() is None:
+                    _refresh_process.terminate()
+                break
+
+            if _refresh_process.poll() is not None:
+                break
+
+            elapsed = int(time.time() - start_time)
+            if elapsed >= 60:
+                minutes = elapsed // 60
+                seconds = elapsed % 60
+                refresh_status["progress"] = f"Refreshing... {minutes}m {seconds}s"
+            else:
+                refresh_status["progress"] = f"Refreshing... {elapsed}s"
+
+            if elapsed >= max_seconds:
+                refresh_status["last_status"] = "timeout"
+                refresh_status["progress"] = f"Refresh timed out after {max_seconds} seconds"
+                _refresh_process.terminate()
+                break
+
+            time.sleep(2)
+
         try:
-            stdout, stderr = _refresh_process.communicate(timeout=600)
+            stdout, stderr = _refresh_process.communicate(timeout=10)
         except subprocess.TimeoutExpired:
             _refresh_process.kill()
             stdout, stderr = _refresh_process.communicate()
-            refresh_status["last_status"] = "timeout"
-            refresh_status["progress"] = "Refresh timed out after 10 minutes"
-            return
 
         if _refresh_cancel_event.is_set():
             refresh_status["last_status"] = "cancelled"
@@ -140,6 +172,22 @@ async def trigger_refresh(background_tasks: BackgroundTasks):
             last_refresh=refresh_status.get("last_refresh"),
             is_running=True
         )
+
+    project_root = Path(__file__).parent.parent.parent.parent
+    has_env_key = bool(os.getenv("FINNHUB_API_KEY"))
+    has_env_file = (project_root / ".env").exists()
+    if not (has_env_key or has_env_file):
+        refresh_status["last_status"] = "error"
+        refresh_status["progress"] = "Missing FINNHUB_API_KEY (.env or environment)."
+        return RefreshResponse(
+            status="error",
+            message="Missing FINNHUB_API_KEY (.env or environment).",
+            last_refresh=refresh_status.get("last_refresh"),
+            is_running=False
+        )
+
+    refresh_status["last_status"] = "running"
+    refresh_status["progress"] = "Starting stock tracker..."
     
     # Start refresh in background
     thread = threading.Thread(target=run_stock_tracker, daemon=True)
@@ -147,7 +195,7 @@ async def trigger_refresh(background_tasks: BackgroundTasks):
     
     return RefreshResponse(
         status="started",
-        message="Background refresh started. Latest data will load when ready.",
+        message="Latest data will load when ready.",
         last_refresh=refresh_status.get("last_refresh"),
         is_running=True
     )
@@ -156,6 +204,9 @@ async def trigger_refresh(background_tasks: BackgroundTasks):
 @router.get("/refresh/status", response_model=RefreshStatusResponse)
 async def get_refresh_status():
     """Get the current status of data refresh"""
+    if not refresh_status.get("is_running") and not refresh_status.get("last_status"):
+        refresh_status["last_status"] = "idle"
+        refresh_status["progress"] = "Idle."
     return RefreshStatusResponse(
         is_running=refresh_status["is_running"],
         last_refresh=refresh_status.get("last_refresh"),

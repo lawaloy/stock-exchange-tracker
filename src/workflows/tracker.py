@@ -142,7 +142,11 @@ class StockTrackerWorkflow:
             if top_n_stocks:
                 logger.info(f"Day trading mode: Will select top {top_n_stocks} stocks by volume")
             
-            all_index_data = self.fetcher.fetch_all_indices(use_screener=use_screener)
+            max_symbols_per_index = top_n_stocks if (top_n_stocks and not use_screener) else None
+            all_index_data = self.fetcher.fetch_all_indices(
+                use_screener=use_screener,
+                max_symbols_per_index=max_symbols_per_index
+            )
             
             # Combine all data
             all_data = []
