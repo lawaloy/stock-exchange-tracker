@@ -185,65 +185,110 @@ def test_function_returns_expected_value_when_given_valid_input(self):
 
 ### Current Gaps & Opportunities
 
-The tracker currently generates rich data (CSV/JSON/Markdown) but lacks:
+The tracker now includes a dashboard, but still lacks:
 
-- ❌ **No Visualization Layer** - Data is in CSV/JSON/Markdown
-- ❌ **No Real-Time Monitoring** - Must re-run CLI to see updates
-- ❌ **No Historical Trends** - Can't see how stocks evolved over time
-- ❌ **No Interactive Filtering** - Can't drill down into specific sectors/stocks
 - ❌ **Alerting System** - Designed but not implemented
+- ❌ **Historical Trends** - Limited multi-day trend analysis
+- ❌ **Real-Time Monitoring** - Must re-run to refresh data
+- ❌ **Advanced Filtering** - Limited sector and technical filters
+
+### Completed Milestones
+
+- ✅ **Web Dashboard (v0.3.0)** - Visual UI for market data, projections, and insights
 
 ### Priority Features (Ranked by Impact)
 
-#### 🥇 Priority #1: Web Dashboard (CRITICAL - Planned for v0.3.0)
+#### 🥇 Priority #1: Alert & Notification System (Next Milestone)
 
 **Status:** Design complete, ready for implementation
 
-**Impact:** Transforms raw data into actionable insights
+**Impact:** Enables timely buy/sell decisions (CRITICAL FOR TRADING)
 
-**Effort:** 1-2 weeks
+**Effort:** 2-3 weeks
 
 **What to Build:**
 
-- [ ] **Frontend (React + TypeScript + TailwindCSS)**
-  - Market overview page with KPI cards
-  - Interactive charts (top gainers/losers, sentiment distribution)
-  - Filterable/sortable stock table
-  - Stock detail modal with historical trends
-  - Mobile responsive design
-  - Dark mode support
+- [ ] **Alert Engine**
+  - Price alerts (threshold-based: "alert me when AAPL < $150")
+  - Screening alerts (pattern-based: "alert when high volume + big gain")
+  - Recommendation alerts ("alert when stock becomes STRONG BUY")
+  - Technical indicator alerts (RSI, MACD, moving average crossovers)
+  - Multi-condition alerts with AND/OR logic
 
-- [ ] **Backend (FastAPI + Python)**
-  - REST API endpoints for market data
-  - CSV/JSON data loading service
-  - Projection summary aggregation
-  - Historical data queries
-  - In-memory caching for performance
+- [ ] **Notification Channels**
+  - AWS SNS (SMS, email)
+  - Azure Service Bus / Event Grid
+  - Google Cloud Pub/Sub
+  - Email (SMTP - cloud agnostic)
+  - Webhook (Slack, Discord, custom endpoints)
+  - Push notifications (optional)
 
-- [ ] **Features**
-  - Real-time market overview (196 stocks, confidence, expected move)
-  - STRONG BUY opportunities showcase
-  - Interactive filtering by recommendation/confidence/risk
-  - Stock detail view with price charts
-  - Projection accuracy tracking
-  - Export functionality
+- [ ] **Alert Management**
+  - JSON/YAML configuration for alert rules
+  - Alert history and audit log
+  - Cooldown periods to prevent spam
+  - Enable/disable individual alerts
+  - Test/dry-run mode
 
-**Documentation:** See [Dashboard Design](docs/DASHBOARD_DESIGN.md) for complete specifications
+- [ ] **CLI Integration**
+  - `stock-tracker alerts list`
+  - `stock-tracker alerts add --name "AAPL Drop" --condition "price < 150"`
+  - `stock-tracker alerts test alert_1`
 
-**Get Started:**
+**Documentation:** See [Alerting Design](docs/ALERTING_DESIGN.md) for complete specifications
 
-```bash
-# Backend setup
-mkdir -p dashboard/backend
-cd dashboard/backend
-python -m venv venv
-pip install fastapi uvicorn pandas
+---
 
-# Frontend setup
-npx create-react-app frontend --template typescript
-cd frontend
-npm install recharts tailwindcss @headlessui/react swr
-```
+#### 🥈 Priority #2: Historical Trends Visualization
+
+**Status:** Needs design & implementation
+
+**Impact:** Enables pattern recognition and projection accuracy validation
+
+**Effort:** 1 week
+
+**What to Build:**
+
+- [ ] **Data aggregation across multiple days**
+  - Load and merge historical CSV/JSON files
+  - Calculate trends and consistency metrics
+  - Track recommendation changes over time
+
+- [ ] **Trend visualization**
+  - Time-series charts for stock prices
+  - Recommendation history timeline
+  - Confidence score trends
+  - Volume patterns
+
+- [ ] **Projection accuracy tracking**
+  - Compare projected vs actual prices
+  - Calculate accuracy percentages per recommendation type
+  - Identify best/worst performing projections
+
+- [ ] **Performance metrics**
+  - Stocks with consistent STRONG BUY ratings
+  - Accuracy by confidence level
+  - Risk-adjusted returns
+
+**Integration:** Can be built as part of Dashboard (Phase 2) or standalone analysis module
+
+---
+
+#### 🥉 Priority #3: Web Dashboard Enhancements
+
+**Status:** In progress
+
+**Impact:** Improves usability and depth of analysis
+
+**Effort:** Ongoing
+
+**What to Build:**
+
+- [ ] Projection accuracy views
+- [ ] Export enhancements (CSV/PNG/PDF)
+- [ ] Additional KPI cards and filtering
+ 
+---
 
 ---
 
