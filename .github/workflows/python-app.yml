@@ -1,13 +1,10 @@
-# Runs on every push to main (including after PR merge) and every pull_request targeting main.
-# Ensures Python and dashboard frontend both pass so merge = immediate full-stack check.
-
 name: CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 permissions:
   contents: read
