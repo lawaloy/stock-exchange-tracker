@@ -36,7 +36,9 @@ const GainersLosersChart: React.FC<GainersLosersChartProps> = ({ gainers, losers
           <XAxis type="number" />
           <YAxis dataKey="symbol" type="category" width={60} />
           <Tooltip
-            formatter={(value: number) => `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`}
+            formatter={(value: number | undefined) =>
+              value != null ? `${value >= 0 ? '+' : ''}${value.toFixed(2)}%` : ''
+            }
           />
           <Bar dataKey="change" radius={[0, 4, 4, 0]}>
             {data.map((entry, index) => (

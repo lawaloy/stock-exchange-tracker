@@ -1,6 +1,18 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-strong-buy: #10B981;
+  --color-buy: #34D399;
+  --color-hold: #64748B;
+  --color-sell: #F59E0B;
+  --color-strong-sell: #EF4444;
+  --color-risk-low: #10B981;
+  --color-risk-medium: #F59E0B;
+  --color-risk-high: #EF4444;
+  --color-bullish: #10B981;
+  --color-neutral: #64748B;
+  --color-bearish: #EF4444;
+}
 
 @layer base {
   body {
