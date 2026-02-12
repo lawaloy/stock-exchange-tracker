@@ -16,7 +16,6 @@ router = APIRouter()
 def _resolve_company_names(symbols: list) -> dict:
     """
     Resolve symbol->company name via pytickersymbols (S&P 500, NASDAQ 100, Dow Jones).
-    No hardcoded list - names come from: 1) stored data (API fetch) 2) pytickersymbols.
     """
     if not symbols:
         return {}
