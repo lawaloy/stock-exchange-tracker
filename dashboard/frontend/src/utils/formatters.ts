@@ -111,3 +111,7 @@ export const getTrendIcon = (trend: string): string => {
       return '→';
   }
 };
+
+/** Display name from API when valid, else symbol */
+export const getCompanyName = (symbol: string, apiName?: string): string =>
+  apiName && apiName !== symbol ? apiName : symbol;

@@ -53,7 +53,7 @@ python -m pytest tests/ -v
 python -m pytest tests/ --cov=src --cov-report=html
 
 # Run specific test file
-python -m pytest tests/test_core_config.py -v
+python -m pytest tests/core/test_config.py -v
 ```
 
 ### 4. Check Code Quality

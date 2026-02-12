@@ -5,6 +5,7 @@ Handles saving and loading stock market data to/from CSV files.
 """
 
 import pandas as pd
+from ..utils.company_names import enrich_stock_data_with_names
 import os
 import json
 from datetime import datetime, timedelta
@@ -36,6 +37,7 @@ class DataStorage:
     def save_daily_data(self, data: List[Dict], date: datetime.date = None) -> str:
         """
         Save daily stock data to CSV.
+        Enriches company names at save time (pytickersymbols) when name==symbol.
         
         Args:
             data: List of stock data dictionaries
@@ -47,6 +49,7 @@ class DataStorage:
         if not data:
             return None
         
+        enrich_stock_data_with_names(data)
         df = pd.DataFrame(data)
         file_path = self._get_daily_file_path(date)
         df.to_csv(file_path, index=False)
@@ -119,7 +122,7 @@ class DataStorage:
         
         # Reorder columns for better readability
         column_order = [
-            'symbol', 'current_price', 'target_low', 'target_mid', 'target_high',
+            'symbol', 'name', 'current_price', 'target_low', 'target_mid', 'target_high',
             'expected_change_percent', 'recommendation', 'confidence', 'trend',
             'momentum_score', 'volatility_score', 'risk_level', 'reason',
             'projection_date', 'generated_at'

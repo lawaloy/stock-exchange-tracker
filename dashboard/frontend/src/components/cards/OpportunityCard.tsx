@@ -1,5 +1,5 @@
 import React from 'react';
-import { formatPrice, formatPercentage, getRiskColor, getTrendIcon } from '../../utils/formatters';
+import { formatPrice, formatPercentage, getCompanyName, getRiskColor, getTrendIcon } from '../../utils/formatters';
 import CompanyLogo from '../common/CompanyLogo';
 import type { Opportunity } from '../../types';
 
@@ -18,9 +18,9 @@ const OpportunityCard: React.FC<OpportunityCardProps> = ({ opportunity, onClick 
         <div className="flex items-center space-x-3">
           <div>
             <div className="flex items-center space-x-2">
-              <CompanyLogo symbol={opportunity.symbol} name={opportunity.name} size={24} />
+              <CompanyLogo symbol={opportunity.symbol} name={getCompanyName(opportunity.symbol, opportunity.name)} size={24} />
               <span className="font-semibold text-lg">{opportunity.symbol}</span>
-              <span className="text-sm text-slate-600">{opportunity.name}</span>
+              <span className="text-sm text-slate-600">{getCompanyName(opportunity.symbol, opportunity.name)}</span>
             </div>
             <div className="flex items-center space-x-2 mt-1 text-sm">
               <span>{formatPrice(opportunity.currentPrice)}</span>

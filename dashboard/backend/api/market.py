@@ -1,11 +1,60 @@
 """
 Market API endpoints
 """
+from typing import Dict, Any, Optional
 from fastapi import APIRouter, HTTPException, Query
 from dashboard.backend.models.market import MarketOverview, MoversResponse, StockMover, IndexData
 from dashboard.backend.services.data_loader import get_data_loader
 
 router = APIRouter()
+
+
+def _generate_demo_summary(analysis: Dict[str, Any], exchange_comparison: Dict[str, Any]) -> str:
+    """Generate a template-based summary when ai_summary is not in the JSON."""
+    summary_data = analysis.get("summary", {})
+    top_gainers = analysis.get("top_gainers", [])[:2]
+    top_losers = analysis.get("top_losers", [])[:2]
+
+    summary_parts = []
+    gainers = summary_data.get("gainers", 0)
+    losers = summary_data.get("losers", 0)
+    avg_change = summary_data.get("average_change_percent", 0)
+
+    if gainers > losers:
+        sentiment = "positive"
+    elif losers > gainers:
+        sentiment = "negative"
+    else:
+        sentiment = "mixed"
+
+    summary_parts.append(
+        f"Today's market showed {sentiment} sentiment with {gainers} gainers and {losers} losers, "
+        f"averaging {avg_change:.2f}% change overall."
+    )
+
+    if top_gainers:
+        top_gainer = top_gainers[0]
+        summary_parts.append(
+            f"{top_gainer['symbol']} led gains with a {top_gainer['change_percent']:.2f}% increase."
+        )
+
+    if top_losers:
+        top_loser = top_losers[0]
+        summary_parts.append(
+            f"{top_loser['symbol']} declined {abs(top_loser['change_percent']):.2f}%, "
+            "marking the largest drop."
+        )
+
+    items = list(exchange_comparison.items()) or []
+    if items:
+        best = max(items, key=lambda x: x[1].get("average_change_percent", 0))
+        exchange_name, stats = best
+        summary_parts.append(
+            f"The {exchange_name} exchange performed best with an average "
+            f"{stats['average_change_percent']:.2f}% gain."
+        )
+
+    return " ".join(summary_parts)
 
 
 @router.get("/overview", response_model=MarketOverview)
@@ -55,10 +104,10 @@ async def get_market_overview():
             indices=indices
         )
     
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+    except ValueError:
+        raise HTTPException(status_code=404, detail="No data available.")
+    except Exception:
+        raise HTTPException(status_code=500, detail="Something went wrong. Please try again.")
 
 
 @router.get("/movers", response_model=MoversResponse)
@@ -90,7 +139,38 @@ async def get_top_movers(
         
         return MoversResponse(type=type, data=movers)
     
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+    except ValueError:
+        raise HTTPException(status_code=404, detail="No data available.")
+    except Exception:
+        raise HTTPException(status_code=500, detail="Something went wrong. Please try again.")
+
+
+async def get_market_summary():
+    """Get market summary (AI-generated if available, otherwise demo summary)."""
+    try:
+        loader = get_data_loader()
+        summary_data = loader.load_summary()
+    except ValueError:
+        raise HTTPException(status_code=404, detail="No data available.")
+    except Exception:
+        raise HTTPException(status_code=500, detail="Something went wrong. Please try again.")
+
+    ai_summary: Optional[str] = summary_data.get("ai_summary")
+    date_str: str = summary_data.get("date", "")
+
+    if ai_summary and ai_summary.strip():
+        return {
+            "date": date_str,
+            "summary": ai_summary.strip(),
+            "source": "ai",
+        }
+
+    analysis = summary_data.get("analysis", {})
+    exchange_comparison = summary_data.get("exchange_comparison", {})
+    demo_summary = _generate_demo_summary(analysis, exchange_comparison)
+
+    return {
+        "date": date_str,
+        "summary": demo_summary,
+        "source": "demo",
+    }

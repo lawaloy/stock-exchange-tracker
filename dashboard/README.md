@@ -28,7 +28,7 @@ pip install -r requirements.txt
 
 # Start the server
 python main.py
-```text
+```
 
 Backend will run on `http://localhost:8000`
 
@@ -42,7 +42,7 @@ npm install
 
 # Start the dev server
 npm run dev
-```text
+```
 
 Frontend will run on `http://localhost:3000`
 
@@ -67,6 +67,7 @@ Navigate to `http://localhost:3000` in your browser.
 
 - `/api/market/overview` - Market statistics
 - `/api/market/movers` - Top gainers/losers
+- `/api/summary` - Market summary (AI or demo)
 - `/api/projections/summary` - Projections overview
 - `/api/projections/opportunities` - Buy/Sell opportunities
 - `/api/stocks/{symbol}` - Stock details
@@ -179,13 +180,15 @@ npm run build
 
 ## What's Next?
 
-See [DASHBOARD_DESIGN.md](../docs/DASHBOARD_DESIGN.md) for planned Phase 2 features:
+**Next Priority:**
 
-- Historical trends page
-- Dark mode
-- Mobile optimization
-- Performance improvements
-- More advanced charts
+1. **Historical trends page** – Multi-day data, projection accuracy, trend charts (partially implemented)
+2. **Dark mode** – Theme toggle
+3. **Mobile optimization** – Responsive layout improvements
+4. **Export enhancements** – CSV/PNG/PDF export
+5. **Performance** – Code splitting, lazy loading
+
+See [DASHBOARD_DESIGN.md](../docs/DASHBOARD_DESIGN.md) for full Phase 2 design.
 
 ## Contributing
 

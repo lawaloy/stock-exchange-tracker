@@ -220,135 +220,37 @@ Edit `config/filters.json` to adjust what qualifies as a "good" stock:
 
 ## Production Deployment
 
-### Docker Deployment
-
-Perfect for scheduled daily runs on any host!
-
-#### Build the Image
+### Docker
 
 ```bash
-cd stock-exchange-tracker
 docker build -t stock-tracker:latest .
-```
-
-#### Run with Environment Variables
-
-##### Option 1: Pass env var directly
-
-```bash
 docker run --rm -e FINNHUB_API_KEY=your-key stock-tracker:latest
+# Or: docker run --rm --env-file .env stock-tracker:latest
 ```
 
-##### Option 2: Use .env file (local/dev)
+**Schedule daily runs**: Use cron (Linux/Mac), Task Scheduler (Windows), or systemd. Example cron:
 
 ```bash
-# Create .env file with your keys (already gitignored)
-docker run --rm --env-file .env stock-tracker:latest
+0 9 * * * docker run --rm -e FINNHUB_API_KEY=$(cat /path/to/key) stock-tracker:latest >> /var/log/stock-tracker.log 2>&1
 ```
 
-**Option 3: Production with secrets
-**
-
-```bash
-# Load key from secure secret store, then inject
-export FINNHUB_API_KEY=$(cat /secrets/finnhub-key)
-docker run --rm -e FINNHUB_API_KEY=$FINNHUB_API_KEY stock-tracker:latest
-```
-
-#### Schedule Daily Runs
-
-**Linux/Mac (cron)**:
-
-```bash
-# Edit crontab
-crontab -e
-
-# Add this line (runs daily at 9 AM)
-0 9 * * * docker run --rm -e FINNHUB_API_KEY=$(cat /path/to/secure/key) stock-tracker:latest >> /var/log/stock-tracker.log 2>&1
-```
-
-**Windows (Task Scheduler)**:
-
-1. Open Task Scheduler
-2. Create Basic Task
-3. Name: "Stock Tracker Daily Run"
-4. Trigger: Daily at 9:00 AM
-5. Action: Start a program
-   - Program: `docker`
-   - Arguments: `run --rm -e FINNHUB_API_KEY=your-key stock-tracker:latest`
-   - Start in: `C:\path\to\stock-exchange-tracker`
-
-**systemd (Linux service)**:
-
-Create `/etc/systemd/system/stock-tracker.timer`:
-
-```ini
-[Unit]
-Description=Stock Tracker Daily Run
-
-[Timer]
-OnCalendar=daily
-OnCalendar=09:00
-Persistent=true
-
-[Install]
-WantedBy=timers.target
-```
-
-Create `/etc/systemd/system/stock-tracker.service`:
-
-```ini
-[Unit]
-Description=Stock Tracker
-
-[Service]
-Type=oneshot
-Environment="FINNHUB_API_KEY=your-key"
-ExecStart=/usr/bin/docker run --rm -e FINNHUB_API_KEY=%FINNHUB_API_KEY% stock-tracker:latest
-```
-
-Enable:
-
-```bash
-sudo systemctl enable stock-tracker.timer
-sudo systemctl start stock-tracker.timer
-```
-
-### Docker Compose (Multi-service)
-
-If you have other services, use `docker-compose.yml`:
+### Docker Compose
 
 ```yaml
-version: '3.8'
-
 services:
   stock-tracker:
     build: .
-    image: stock-tracker:latest
     environment:
       - FINNHUB_API_KEY=${FINNHUB_API_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-    # Or use env_file for local dev
-    # env_file:
-    #   - .env
     volumes:
-      - ./data:/app/data  # Persist output data
-      - ./logs:/app/logs  # Persist logs
+      - ./data:/app/data
+      - ./logs:/app/logs
 ```
 
-Run:
+### Kubernetes
 
-```bash
-# Set keys in shell
-export FINNHUB_API_KEY=your-key
-docker compose up
-```
-
-### Kubernetes Deployment
-
-For production clusters with scheduling:
-
-#### 1. Create Secret (one-time)
+Use `k8s/stock-tracker-cronjob.yaml` as a CronJob. Create secrets first:
 
 ```bash
 kubectl create secret generic stock-tracker-secrets \
@@ -356,85 +258,15 @@ kubectl create secret generic stock-tracker-secrets \
   --from-literal=OPENAI_API_KEY=your-key
 ```
 
-#### 2. Deploy as CronJob
+### Cloud
 
-```yaml
-apiVersion: batch/v1
-kind: CronJob
-metadata:
-  name: stock-tracker
-spec:
-  schedule: "0 9 * * *"  # Daily at 9 AM UTC
-  jobTemplate:
-    spec:
-      template:
-        spec:
-          containers:
-          - name: stock-tracker
-            image: stock-tracker:latest
-            env:
-            - name: FINNHUB_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: stock-tracker-secrets
-                  key: FINNHUB_API_KEY
-            - name: OPENAI_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: stock-tracker-secrets
-                  key: OPENAI_API_KEY
-          restartPolicy: OnFailure
-```
+AWS ECS + EventBridge, GCP Cloud Run + Scheduler, Azure Container Instances + Logic Apps — store keys in secret manager, trigger daily.
 
-Apply:
+### Security
 
-```bash
-kubectl apply -f k8s/stock-tracker-cronjob.yaml
-```
-
-### Cloud/Hosted Options
-
-**AWS ECS + EventBridge**:
-
-- Store key in AWS Secrets Manager
-- Run as ECS Task triggered by EventBridge schedule
-- Task definition references the secret
-
-**Google Cloud Run + Cloud Scheduler**:
-
-- Store key in Secret Manager
-- Deploy as Cloud Run job
-- Cloud Scheduler triggers daily
-
-**Azure Container Instances + Logic Apps**:
-
-- Store key in Key Vault
-- Run as Container Instance
-- Logic Apps triggers daily
-
-### Security Best Practices
-
-1. **Never commit keys to git**
-   - `.env` is already gitignored
-   - Double-check before every commit
-
-2. **Use secret stores in production**
-   - AWS: Secrets Manager or Parameter Store
-   - GCP: Secret Manager
-   - Azure: Key Vault
-   - HashiCorp Vault
-
-3. **Rotate keys periodically**
-   - Generate new Finnhub key every 90 days
-   - Update secret store, redeploy
-
-4. **Limit access**
-   - Use IAM roles/policies for secret access
-   - Principle of least privilege
-
-5. **Audit usage**
-   - Check Finnhub dashboard for unusual activity
-   - Monitor logs for errors
+- Never commit keys; `.env` is gitignored
+- Use secret stores in production (AWS Secrets Manager, GCP Secret Manager, Azure Key Vault)
+- Rotate keys periodically; audit Finnhub usage
 
 ---
 
@@ -614,18 +446,14 @@ A: Yes. All data stays on your machine. API keys never leave your environment.
 
 ## Contributing
 
-We welcome contributions! Priority areas:
+We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
-**High Priority - New Features:**
+**Next Priority (by impact):**
 
-- **Alert & notification system** (price alerts, screening alerts, SNS/email/webhook)
-- Additional stock exchanges (international markets)
-- More screening filters (technical indicators: RSI, MACD)
-- Enhanced AI summaries (sentiment, news, recommendations)
-- Data visualization (charts, trends)
-- Historical analysis & backtesting
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+1. **Alert & notification system** – Price/screening/recommendation alerts, SNS/email/webhook (design ready; see [ALERTING_DESIGN.md](docs/ALERTING_DESIGN.md))
+2. **Historical trends** – Multi-day data aggregation, projection accuracy tracking, trend charts
+3. **Dashboard enhancements** – Dark mode, mobile optimization, export improvements
+4. Additional exchanges, screening filters (RSI/MACD), enhanced AI summaries
 
 **Quick Start:**
 

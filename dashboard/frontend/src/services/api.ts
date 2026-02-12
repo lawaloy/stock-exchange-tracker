@@ -6,6 +6,8 @@ import type {
   OpportunitiesResponse,
   StockDetail,
   HistoricalData,
+  HistoricalSummaryResponse,
+  MarketSummaryResponse,
 } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? '';
@@ -14,6 +16,17 @@ const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
 });
+
+// Log API failures in development only
+if (import.meta.env.DEV) {
+  api.interceptors.response.use(
+    (res) => res,
+    (err) => {
+      console.error('[API] Request failed:', err.config?.url, err.response?.status, err.message);
+      return Promise.reject(err);
+    }
+  );
+}
 
 // Market endpoints
 export const marketApi = {
@@ -29,6 +42,20 @@ export const projectionsApi = {
     api.get<OpportunitiesResponse>('/api/projections/opportunities', {
       params: { type, limit },
     }),
+};
+
+// Summary endpoint (market AI/demo summary)
+export const summaryApi = {
+  getSummary: () => api.get<MarketSummaryResponse>('/api/summary'),
+};
+
+// History endpoints
+export const historyApi = {
+  getDates: () => api.get<{ dates: string[] }>('/api/history/dates'),
+  getSummary: (days: number = 30) =>
+    api.get<HistoricalSummaryResponse>('/api/history/summary', { params: { days } }),
+  getSymbols: () =>
+    api.get<{ symbols: string[]; names: Record<string, string>; date: string }>('/api/history/symbols'),
 };
 
 // Stocks endpoints

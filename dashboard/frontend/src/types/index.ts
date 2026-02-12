@@ -114,3 +114,31 @@ export interface HistoricalData {
   symbol: string;
   data: HistoricalPoint[];
 }
+
+export interface DailySummaryPoint {
+  date: string;
+  totalProjections: number;
+  averageConfidence: number;
+  expectedMarketMove: number;
+  sentiment: string;
+  strongBuy: number;
+  buy: number;
+  hold: number;
+  sell: number;
+  strongSell: number;
+}
+
+export interface HistoricalSummaryResponse {
+  dates: string[];
+  data: DailySummaryPoint[];
+  firstDate: string;
+  lastDate: string;
+  symbols?: string[];
+  names?: Record<string, string>;
+}
+
+export interface MarketSummaryResponse {
+  date: string;
+  summary: string;
+  source: 'ai' | 'demo';
+}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { formatPrice, formatPercentage, getRecommendationColor, getRiskColor } from '../../utils/formatters';
+import { formatPrice, formatPercentage, getCompanyName, getRecommendationColor, getRiskColor } from '../../utils/formatters';
 import CompanyLogo from '../common/CompanyLogo';
 import type { Opportunity } from '../../types';
 
@@ -14,11 +14,12 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onStockClick }) => {
   const [filterRec, setFilterRec] = useState('All');
   const itemsPerPage = 20;
 
-  // Filter stocks
+  // Filter stocks (names come from API - saved at write time)
   const filteredStocks = stocks.filter(stock => {
+    const displayName = getCompanyName(stock.symbol, stock.name);
     const matchesSearch = 
       stock.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      stock.name.toLowerCase().includes(searchTerm.toLowerCase());
+      displayName.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesFilter = 
       filterRec === 'All' || 
@@ -86,12 +87,12 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onStockClick }) => {
                 </td>
                 <td className="px-4 py-3 text-sm font-medium text-slate-900">
                   <div className="flex items-center gap-2">
-                    <CompanyLogo symbol={stock.symbol} name={stock.name} size={20} />
+                    <CompanyLogo symbol={stock.symbol} name={getCompanyName(stock.symbol, stock.name)} size={20} />
                     <span>{stock.symbol}</span>
                   </div>
                 </td>
                 <td className="px-4 py-3 text-sm text-slate-600 max-w-xs truncate">
-                  {stock.name}
+                  {getCompanyName(stock.symbol, stock.name)}
                 </td>
                 <td className="px-4 py-3 text-sm text-right">
                   {formatPrice(stock.currentPrice)}

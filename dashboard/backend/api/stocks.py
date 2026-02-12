@@ -24,7 +24,7 @@ async def get_stock_detail(symbol: str = Path(..., description="Stock symbol")):
         stock_daily = daily_df[daily_df['symbol'] == symbol.upper()]
         
         if stock_daily.empty:
-            raise HTTPException(status_code=404, detail=f"Stock {symbol} not found")
+            raise HTTPException(status_code=404, detail="Stock not found.")
         
         stock_row = stock_daily.iloc[0]
         
@@ -83,8 +83,8 @@ async def get_stock_detail(symbol: str = Path(..., description="Stock symbol")):
     
     except HTTPException:
         raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+    except Exception:
+        raise HTTPException(status_code=500, detail="Something went wrong. Please try again.")
 
 
 @router.get("/{symbol}/historical", response_model=HistoricalData)
@@ -98,12 +98,21 @@ async def get_stock_historical(
         historical_records = loader.load_historical_data(symbol.upper(), days)
         
         if not historical_records:
-            raise HTTPException(status_code=404, detail=f"No historical data found for {symbol}")
+            raise HTTPException(status_code=404, detail="No historical data found.")
         
         historical_points = []
         for record in historical_records:
-            projection = record.get('projection')
-            
+            proj = record.get('projection')
+            # Convert to camelCase for frontend
+            projection = None
+            if proj:
+                projection = {
+                    'targetPrice': proj.get('target_price'),
+                    'confidence': proj.get('confidence'),
+                    'recommendation': proj.get('recommendation'),
+                    'expectedChange': proj.get('expected_change'),
+                }
+
             historical_points.append(HistoricalPoint(
                 date=record['date'],
                 close=float(record['close']),
@@ -119,5 +128,5 @@ async def get_stock_historical(
     
     except HTTPException:
         raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+    except Exception:
+        raise HTTPException(status_code=500, detail="Something went wrong. Please try again.")

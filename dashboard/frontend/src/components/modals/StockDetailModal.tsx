@@ -3,7 +3,7 @@ import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { stocksApi } from '../../services/api';
-import { formatPrice, formatPercentage, formatVolume, getRecommendationColor, getRiskColor, getTrendIcon } from '../../utils/formatters';
+import { formatPrice, formatPercentage, formatVolume, getCompanyName, getRecommendationColor, getRiskColor, getTrendIcon } from '../../utils/formatters';
 import type { StockDetail } from '../../types';
 
 interface StockDetailModalProps {
@@ -66,7 +66,7 @@ const StockDetailModal: React.FC<StockDetailModalProps> = ({ symbol, isOpen, onC
               <Dialog.Panel className="w-full max-w-3xl transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
                 <div className="flex items-start justify-between mb-4">
                   <Dialog.Title as="h3" className="text-2xl font-bold text-slate-900">
-                    {loading ? 'Loading...' : stockDetail ? `${stockDetail.symbol} - ${stockDetail.name}` : symbol}
+                    {loading ? 'Loading...' : stockDetail ? `${stockDetail.symbol} - ${getCompanyName(stockDetail.symbol, stockDetail.name)}` : symbol}
                   </Dialog.Title>
                   <button
                     onClick={onClose}

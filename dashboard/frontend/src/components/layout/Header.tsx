@@ -36,7 +36,6 @@ const Header: React.FC<HeaderProps> = ({ dataDate, onRefreshComplete, onQuickRef
     onQuickRefresh?.();
 
     try {
-      updateMessage('Fetching fresh data in the background...');
       // Trigger refresh
       const response = await api.post('/api/refresh');
       updateMessage(response.data.message);
@@ -67,8 +66,7 @@ const Header: React.FC<HeaderProps> = ({ dataDate, onRefreshComplete, onQuickRef
             } else if (status.last_status === 'idle') {
               updateMessage('');
             } else {
-              const fallback = status.progress || 'Refresh failed. Please try again.';
-              updateMessage(`Refresh failed: ${fallback}`);
+              updateMessage('Refresh failed. Please try again.');
               setTimeout(() => updateMessage(''), 5000);
             }
           }
@@ -98,7 +96,7 @@ const Header: React.FC<HeaderProps> = ({ dataDate, onRefreshComplete, onQuickRef
       setTimeout(() => updateMessage(''), 3000);
     } catch (error) {
       console.error('Cancel refresh error:', error);
-      updateMessage('Failed to cancel refresh ');
+      updateMessage('Failed to cancel refresh.');
       setTimeout(() => updateMessage(''), 5000);
     }
   };

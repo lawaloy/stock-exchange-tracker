@@ -1,0 +1,109 @@
+"""Tests for stock tracker workflow."""
+
+import tempfile
+import shutil
+from pathlib import Path
+from unittest.mock import patch, MagicMock
+
+import pytest
+
+
+@pytest.fixture
+def temp_data_dir():
+    """Create temp data directory."""
+    tmp = tempfile.mkdtemp()
+    yield Path(tmp)
+    shutil.rmtree(tmp, ignore_errors=True)
+
+
+@pytest.fixture
+def sample_stock_data():
+    """Sample stock data for workflow."""
+    return [
+        {
+            "symbol": "AAPL",
+            "name": "Apple Inc.",
+            "close": 150.0,
+            "change": 1.5,
+            "change_percent": 1.0,
+            "volume": 50_000_000,
+            "index_name": "S&P 500",
+        },
+        {
+            "symbol": "GOOGL",
+            "name": "Alphabet Inc.",
+            "close": 140.0,
+            "change": -1.4,
+            "change_percent": -1.0,
+            "volume": 2_000_000,
+            "index_name": "NASDAQ-100",
+        },
+    ]
+
+
+class TestStockTrackerWorkflow:
+    """Test workflow with mocked dependencies."""
+
+    @patch.dict("os.environ", {"OPENAI_API_KEY": ""}, clear=False)
+    @patch("src.workflows.tracker.get_indices_to_track", return_value=["S&P 500", "NASDAQ-100"])
+    @patch("src.workflows.tracker.StockDataFetcher")
+    @patch("src.workflows.tracker.DataStorage")
+    @patch("src.workflows.tracker.AlertEngine")
+    def test_workflow_run_success(
+        self, mock_alert, mock_storage_cls, mock_fetcher_cls, mock_indices, sample_stock_data, temp_data_dir
+    ):
+        """Workflow completes successfully with mocked fetch and storage."""
+        from src.workflows.tracker import StockTrackerWorkflow
+
+        mock_fetcher = MagicMock()
+        mock_fetcher.fetch_all_indices.return_value = {
+            "S&P 500": sample_stock_data[:1],
+            "NASDAQ-100": sample_stock_data[1:],
+        }
+        mock_fetcher_cls.return_value = mock_fetcher
+
+        mock_storage = MagicMock()
+        mock_storage.save_daily_data.return_value = str(temp_data_dir / "daily_data_2026-01-15.csv")
+        mock_storage.save_summary.return_value = str(temp_data_dir / "summary_2026-01-15.json")
+        mock_storage.save_projections.return_value = str(temp_data_dir / "projections_2026-01-15.csv")
+        mock_storage_cls.return_value = mock_storage
+
+        mock_alert.from_config.return_value = None
+
+        workflow = StockTrackerWorkflow(include_profile=False)
+        workflow.fetcher = mock_fetcher
+        workflow.storage = mock_storage
+        workflow.alert_engine = None
+        workflow.ai_summarizer.enabled = False
+
+        result = workflow.run(use_screener=False)
+
+        assert result["success"] is True
+        assert len(result["data"]) == 2
+        assert "analysis" in result
+        assert "projections" in result
+        assert "ai_summary" in result
+        assert result["ai_summary"] is not None
+
+    @patch("src.workflows.tracker.get_indices_to_track", return_value=["S&P 500"])
+    @patch("src.workflows.tracker.StockDataFetcher")
+    @patch("src.workflows.tracker.DataStorage")
+    @patch("src.workflows.tracker.AlertEngine")
+    def test_workflow_handles_fetch_failure(
+        self, mock_alert, mock_storage_cls, mock_fetcher_cls, mock_indices
+    ):
+        """Workflow returns error when fetch fails."""
+        from src.workflows.tracker import StockTrackerWorkflow
+
+        mock_fetcher = MagicMock()
+        mock_fetcher.fetch_all_indices.side_effect = Exception("API rate limit exceeded")
+        mock_fetcher_cls.return_value = mock_fetcher
+        mock_alert.from_config.return_value = None
+
+        workflow = StockTrackerWorkflow(include_profile=False)
+        workflow.fetcher = mock_fetcher
+
+        result = workflow.run(use_screener=False)
+
+        assert result["success"] is False
+        assert "error" in result
