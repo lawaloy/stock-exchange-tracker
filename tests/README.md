@@ -2,19 +2,61 @@
 
 ## Overview
 
-This directory contains unit tests for the Stock Exchange Tracker project, organized to mirror the source code structure.
+This directory contains unit tests for the Stock Exchange Tracker project. The test layout mirrors the project structure so that each source module has a corresponding test package.
 
 ## Test Structure
+
+Tests are organized to mirror the source code layout:
 
 ```text
 tests/
 ├── __init__.py
-├── test_core_config.py         # Tests for core/config.py
-├── test_core_logger.py          # Tests for core/logger.py
-├── test_services_api_client.py  # Tests for services/api_client.py
-├── test_analysis_analyzer.py    # Tests for analysis/analyzer.py
-└── test_storage.py              # Tests for storage/data_storage.py
+├── conftest.py              # Pytest config: adds project root to sys.path
+├── README.md
+│
+├── analysis/                # mirrors src/analysis/
+│   ├── __init__.py
+│   ├── test_ai_summarizer.py
+│   ├── test_analyzer.py
+│   └── test_projector.py
+│
+├── core/                    # mirrors src/core/
+│   ├── __init__.py
+│   ├── test_config.py
+│   └── test_logger.py
+│
+├── services/                # mirrors src/services/
+│   ├── __init__.py
+│   └── test_api_client.py
+│
+├── storage/                 # mirrors src/storage/
+│   ├── __init__.py
+│   └── test_data_storage.py
+│
+├── workflows/               # mirrors src/workflows/
+│   ├── __init__.py
+│   └── test_tracker.py
+│
+└── dashboard/               # mirrors dashboard/
+    ├── __init__.py
+    └── backend/
+        ├── __init__.py
+        ├── api/
+        │   ├── __init__.py
+        │   └── test_api.py
+        └── services/
+            ├── __init__.py
+            └── test_data_loader.py
 ```
+
+## Path Setup
+
+`conftest.py` adds the project root to `sys.path`, so tests can use:
+
+- `from src.analysis.xxx import ...`
+- `from dashboard.backend.services.xxx import ...`
+
+No manual `sys.path.insert` is needed in individual test files.
 
 ## Running Tests
 
@@ -22,147 +64,85 @@ tests/
 
 ```bash
 # From project root
-python -m pytest tests/
+python -m pytest tests/ -v
 
 # Or using unittest
 python -m unittest discover tests/
 ```
 
+### Run Specific Package
+
+```bash
+python -m pytest tests/analysis/
+python -m pytest tests/core/
+python -m pytest tests/dashboard/
+```
+
 ### Run Specific Test File
 
 ```bash
-python -m pytest tests/test_core_config.py
-
-# Or
-python -m unittest tests.test_core_config
+python -m pytest tests/core/test_config.py -v
 ```
 
-### Run Specific Test Class
+### Run Specific Test Class or Method
 
 ```bash
-python -m pytest tests/test_core_config.py::TestCoreConfig
-
-# Or
-python -m unittest tests.test_core_config.TestCoreConfig
-```
-
-### Run Specific Test Method
-
-```bash
-python -m pytest tests/test_core_config.py::TestCoreConfig::test_default_indices
-
-# Or
-python -m unittest tests.test_core_config.TestCoreConfig.test_default_indices
+python -m pytest tests/core/test_config.py::TestCoreConfig
+python -m pytest tests/core/test_config.py::TestCoreConfig::test_default_indices
 ```
 
 ### Run with Coverage
 
 ```bash
-# Install coverage first
 pip install pytest-cov
-
-# Run with coverage report
 python -m pytest tests/ --cov=src --cov-report=html
-
-# View coverage report
-open htmlcov/index.html
 ```
 
 ## Test Coverage
 
-Current test coverage by module:
-
-- **core/config.py**: Configuration loading and defaults
-- **core/logger.py**: Logging setup and handlers
-- **services/api_client.py**: Rate limiting and API calls
-- **analysis/analyzer.py**: Stock data analysis
-- **storage/data_storage.py**: Data persistence
+| Module | Tests |
+|--------|-------|
+| `src/core/config.py` | Configuration loading and defaults |
+| `src/core/logger.py` | Logging setup and handlers |
+| `src/services/api_client.py` | Rate limiting and Finnhub API |
+| `src/analysis/analyzer.py` | Stock data analysis |
+| `src/analysis/ai_summarizer.py` | Demo summary, fallback when no API key |
+| `src/analysis/projector.py` | Stock projections and recommendations |
+| `src/storage/data_storage.py` | Data persistence |
+| `src/workflows/tracker.py` | Workflow integration with mocked deps |
+| `dashboard/backend/api` | Market, summary, health endpoints |
+| `dashboard/backend/services/data_loader.py` | Data loading from CSV/JSON |
 
 ## Writing New Tests
 
-When adding new functionality, follow these guidelines:
+1. **Mirror the source structure**  
+   Place tests in the matching package:
+   - `src/services/foo.py` → `tests/services/test_foo.py`
 
-1. **Mirror the source structure**: Test file names should match source files
-   - `src/core/config.py` → `tests/test_core_config.py`
+2. **Use descriptive names**  
+   `test_` prefix, clear docstrings.
 
-2. **Use descriptive test names**: Start with `test_` and describe what's being tested
+3. **Use `conftest.py` for shared setup**  
+   Fixtures and path setup are centralized.
 
-   ```python
-   def test_load_from_config_file(self):
-       """Test loading indices from config file."""
-   ```
+4. **Mock external dependencies**  
+   Use `@patch` or `unittest.mock` for API calls and file I/O.
 
-3. **Follow AAA pattern**: Arrange, Act, Assert
-
-   ```python
-   def test_example(self):
-       # Arrange: Set up test data
-       data = create_test_data()
-       
-       # Act: Execute the function
-       result = function_under_test(data)
-       
-       # Assert: Verify the result
-       self.assertEqual(result, expected)
-   ```
-
-4. **Use mocks for external dependencies**:
-
-   ```python
-   @patch('requests.Session')
-   def test_api_call(self, mock_session):
-       # Mock external API calls
-   ```
-
-5. **Clean up resources**: Use `setUp()` and `tearDown()` for test fixtures
-
-   ```python
-   def setUp(self):
-       self.temp_dir = tempfile.mkdtemp()
-   
-   def tearDown(self):
-       shutil.rmtree(self.temp_dir)
-   ```
+5. **Clean up resources**  
+   Use `setUp`/`tearDown` or pytest fixtures for temp dirs.
 
 ## Dependencies
-
-Tests require these additional packages:
 
 ```bash
 pip install pytest pytest-cov
 ```
 
-Or for unittest (built-in, no install needed):
+## Next Priority
 
-```bash
-python -m unittest discover tests/
-```
+**Missing tests (by module):**
 
-## Continuous Integration
-
-These tests are designed to run in CI/CD pipelines. Example GitHub Actions:
-
-```yaml
-- name: Run tests
-  run: |
-    pip install -r requirements.txt
-    python -m pytest tests/ --cov=src --cov-report=xml
-```
-
-## TODO
-
-**Priority - New Feature Tests:**
-
-- [ ] Tests for new screening filters (when added)
-- [ ] Tests for additional exchanges (when added)
-- [ ] Tests for visualization module (when added)
-- [ ] Tests for alert system (when added)
-
-**Current - Missing Tests:**
-
-- [ ] Integration tests for full workflow
-- [ ] Tests for services/data_fetcher.py
-- [ ] Tests for services/stock_screener.py
-- [ ] Tests for services/index_fetcher.py
-- [ ] Tests for analysis/ai_summarizer.py
-- [ ] Performance tests for API rate limiting
+1. `src/services/data_fetcher.py` – Stock data fetching
+2. `src/services/stock_screener.py` – Screening logic
+3. `src/services/index_fetcher.py` – Index constituent fetching
+4. `src/alerts/` – Alert engine, rules, storage
+5. Integration tests for full workflow (end-to-end)

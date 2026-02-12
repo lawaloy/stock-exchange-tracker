@@ -6,8 +6,9 @@ Uses Finnhub API (official, reliable, free tier: 60 calls/minute).
 """
 
 import os
+import threading
 import time
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 from datetime import datetime, timedelta
 from collections import deque
 import requests
@@ -125,6 +126,11 @@ class FinnhubClient:
         self.base_url = "https://finnhub.io/api/v1"
         self.rate_limiter = RateLimiter(calls_per_minute=60)  # Free tier limit
         
+        # Profile cache: symbol -> (profile, timestamp) - avoids redundant API calls
+        self._profile_cache: Dict[str, Tuple[Dict, float]] = {}
+        self._profile_cache_ttl = 86400  # 24 hours
+        self._profile_cache_lock = threading.Lock()
+
         # Configure session with retry strategy
         # Note: 429 errors are handled manually, not by retry strategy
         self.session = requests.Session()
@@ -221,15 +227,30 @@ class FinnhubClient:
     
     def get_company_profile(self, symbol: str) -> Dict:
         """
-        Get company profile (name, market cap, etc.).
+        Get company profile from Finnhub stock/profile2.
+        Caches responses for 24h to avoid redundant API calls when re-fetching.
+        
+        Returns (on success): name, ticker, exchange, marketCapitalization,
+        finnhubIndustry, country, currency, ipo, logo, weburl, etc.
         
         Args:
             symbol: Stock ticker symbol
         
         Returns:
-            Dictionary with company profile data
+            Profile dict with 'name' key (company name) when successful
         """
-        return self._make_request("stock/profile2", {"symbol": symbol})
+        sym = symbol.upper()
+        with self._profile_cache_lock:
+            cached = self._profile_cache.get(sym)
+            if cached:
+                profile, ts = cached
+                if time.time() - ts < self._profile_cache_ttl:
+                    return profile
+
+        profile = self._make_request("stock/profile2", {"symbol": symbol})
+        with self._profile_cache_lock:
+            self._profile_cache[sym] = (profile, time.time())
+        return profile
     
     def get_candle_data(
         self, 
@@ -317,19 +338,22 @@ class FinnhubClient:
             
             profile = {}
             if include_profile:
-                # Get company profile (name, market cap) - 1 API call
                 try:
                     profile = self.get_company_profile(symbol)
                 except Exception as e:
                     logger.debug(f"Could not fetch profile for {symbol}: {e}")
                     profile = {}
-            
+
+            # Finnhub profile2 returns 'name' with company name (e.g. "Apple Inc").
+            # Use it when present; only fall back to symbol when profile failed or is empty.
+            name = (profile.get("name") or symbol) if profile else symbol
+
             # Use previous close from quote (no need for candles)
             current_price = quote.get("c", 0)
             previous_close = quote.get("pc", current_price)
             change = current_price - previous_close
             change_pct = (change / previous_close * 100) if previous_close > 0 else 0.0
-            
+
             return {
                 "symbol": symbol,
                 "date": datetime.now().date(),
@@ -341,7 +365,7 @@ class FinnhubClient:
                 "previous_close": previous_close,
                 "change": change,
                 "change_percent": change_pct,
-                "name": profile.get("name", symbol),
+                "name": name,
                 "exchange": profile.get("exchange", "Unknown"),
                 "market_cap": profile.get("marketCapitalization", 0),
             }

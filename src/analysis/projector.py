@@ -12,6 +12,7 @@ from typing import Dict, List, Optional, Tuple
 from datetime import datetime, timedelta
 import pandas as pd
 from ..core.logger import setup_logger
+from ..utils.company_names import resolve_company_name
 
 logger = setup_logger("projector")
 
@@ -117,8 +118,13 @@ class StockProjector:
                 stock_data, momentum, trend, recommendation
             )
             
+            # Resolve company name - API often returns symbol when profile fetch fails
+            raw_name = stock_data.get('name', symbol)
+            company_name = resolve_company_name(symbol, raw_name)
+
             projection = {
                 'symbol': symbol,
+                'name': company_name,
                 'current_price': round(current_price, 2),
                 'target_low': round(target_low, 2),
                 'target_mid': round(target_mid, 2),

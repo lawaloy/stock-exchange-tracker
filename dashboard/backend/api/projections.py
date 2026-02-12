@@ -83,10 +83,10 @@ async def get_projections_summary():
             riskProfile=risk_profile
         )
     
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+    except ValueError:
+        raise HTTPException(status_code=404, detail="No data available.")
+    except Exception:
+        raise HTTPException(status_code=500, detail="Something went wrong. Please try again.")
 
 
 @router.get("/opportunities", response_model=OpportunitiesResponse)
@@ -151,7 +151,7 @@ async def get_opportunities(
             opportunities=opportunities
         )
     
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+    except ValueError:
+        raise HTTPException(status_code=404, detail="No data available.")
+    except Exception:
+        raise HTTPException(status_code=500, detail="Something went wrong. Please try again.")

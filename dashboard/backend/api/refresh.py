@@ -54,24 +54,23 @@ def run_stock_tracker():
         
         if not main_script.exists():
             refresh_status["last_status"] = "error"
-            refresh_status["progress"] = f"Stock tracker not found at {main_script}"
+            refresh_status["progress"] = "Unable to start refresh."
             refresh_status["is_running"] = False
             return
         
-        # Run the stock tracker (default to top 10 for faster refresh)
+        # Run the stock tracker (default to top 10 for faster refresh, minimum 10)
         top_n_value = os.getenv("REFRESH_TOP_N", "10")
         try:
             top_n = max(0, int(top_n_value))
         except ValueError:
             top_n = 10
+        if top_n > 0:
+            top_n = max(10, top_n)  # At least 10 stocks when using limit
 
         command = [sys.executable, str(main_script)]
         if top_n:
             command.extend(["--top-n", str(top_n)])
 
-        quote_only = os.getenv("REFRESH_QUOTE_ONLY", "1").lower() in {"1", "true", "yes"}
-        if quote_only:
-            command.append("--quote-only")
 
         no_screener = os.getenv("REFRESH_NO_SCREENER", "1").lower() in {"1", "true", "yes"}
         if no_screener:
@@ -80,7 +79,7 @@ def run_stock_tracker():
         refresh_status["progress"] = "Refreshing..."
 
         env = os.environ.copy()
-        env["STOCK_FETCH_MAX_WORKERS"] = os.getenv("REFRESH_MAX_WORKERS", "1")
+        env["STOCK_FETCH_MAX_WORKERS"] = os.getenv("REFRESH_MAX_WORKERS", "4")
 
         _refresh_process = subprocess.Popen(
             command,
@@ -106,16 +105,12 @@ def run_stock_tracker():
                 break
 
             elapsed = int(time.time() - start_time)
-            if elapsed >= 60:
-                minutes = elapsed // 60
-                seconds = elapsed % 60
-                refresh_status["progress"] = f"Refreshing... {minutes}m {seconds}s"
-            else:
-                refresh_status["progress"] = f"Refreshing... {elapsed}s"
+
+            refresh_status["progress"] = f"Refreshing..."
 
             if elapsed >= max_seconds:
                 refresh_status["last_status"] = "timeout"
-                refresh_status["progress"] = f"Refresh timed out after {max_seconds} seconds"
+                refresh_status["progress"] = "Refresh timed out. Please try again."
                 _refresh_process.terminate()
                 break
 
@@ -138,16 +133,10 @@ def run_stock_tracker():
             refresh_status["progress"] = "Data refresh completed successfully!"
         else:
             refresh_status["last_status"] = "error"
-            error_output = (stderr or stdout or "").strip()
-            if error_output:
-                lines = [line.strip() for line in error_output.splitlines() if line.strip()]
-                snippet = " | ".join(lines[-3:])[:300]
-                refresh_status["progress"] = f"Error: {snippet}"
-            else:
-                refresh_status["progress"] = "Error: Refresh failed. Check backend logs."
-    except Exception as e:
+            refresh_status["progress"] = "Refresh failed. Please try again."
+    except Exception:
         refresh_status["last_status"] = "error"
-        refresh_status["progress"] = f"Error: {str(e)}"
+        refresh_status["progress"] = "Refresh failed. Please try again."
     finally:
         _refresh_process = None
         refresh_status["is_running"] = False
@@ -178,10 +167,10 @@ async def trigger_refresh(background_tasks: BackgroundTasks):
     has_env_file = (project_root / ".env").exists()
     if not (has_env_key or has_env_file):
         refresh_status["last_status"] = "error"
-        refresh_status["progress"] = "Missing FINNHUB_API_KEY (.env or environment)."
+        refresh_status["progress"] = "Refresh failed. Please check your API key configuration."
         return RefreshResponse(
             status="error",
-            message="Missing FINNHUB_API_KEY (.env or environment).",
+            message="Refresh failed. Please check your API key configuration.",
             last_refresh=refresh_status.get("last_refresh"),
             is_running=False
         )

@@ -155,10 +155,13 @@ class StockTrackerWorkflow:
             indices_to_track = get_indices_to_track()
             logger.info(f"Fetching data from indices: {', '.join(indices_to_track)}")
             logger.info(f"Stock screener enabled: {use_screener}")
+            num_indices = len(indices_to_track)
             if top_n_stocks:
                 logger.info(f"Day trading mode: Will select top {top_n_stocks} stocks by volume")
-            
-            max_symbols_per_index = top_n_stocks if (top_n_stocks and not use_screener) else None
+                # Limit per-index to avoid over-fetching (e.g. 10 stocks, 2 indices → 5 per index)
+                max_symbols_per_index = max(1, (top_n_stocks + num_indices - 1) // num_indices) if not use_screener else None
+            else:
+                max_symbols_per_index = None
             all_index_data = self.fetcher.fetch_all_indices(
                 use_screener=use_screener,
                 max_symbols_per_index=max_symbols_per_index
