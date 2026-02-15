@@ -67,7 +67,7 @@ Navigate to `http://localhost:3000` in your browser.
 
 - `/api/market/overview` - Market statistics
 - `/api/market/movers` - Top gainers/losers
-- `/api/summary` - Market summary (AI or demo)
+- `/api/summary` - Market summary (Expert or Learner)
 - `/api/projections/summary` - Projections overview
 - `/api/projections/opportunities` - Buy/Sell opportunities
 - `/api/stocks/{symbol}` - Stock details
