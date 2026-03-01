@@ -9,11 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Planned for Future Releases
 
-- Historical trends page with time-series analysis
-- Dark mode toggle
-- Enhanced mobile optimization
+- Historical trends page with time-series analysis and projection accuracy tracking
+- Full alert and notification system
 - Real-time WebSocket updates
 - User authentication and watchlists
+
+## [0.3.1] - 2026-02-10
+
+### Added
+
+- **Dashboard Dark Mode**: Theme toggle with system preference detection and localStorage persistence
+- **Dashboard Export**: CSV/PNG/PDF export for dashboard, stock table, and summary with clear labels per export target
+- **Enhanced Mobile Layout**: Responsive design with horizontal scroll for stock tables
+
+### Changed
+
+- **Data Loader**: Uses date in filename (YYYY-MM-DD) instead of file mtime for latest data on startup and refresh
+- **Header Layout**: Theme toggle moved to far right
 
 ## [0.3.0] - 2026-01-14
 

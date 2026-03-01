@@ -117,22 +117,29 @@
 - ✅ Safari (latest)
 - ⚠️ IE11 not supported (uses modern JavaScript)
 
+## Implemented (Phase 2) ✅
+
+### UX Enhancements
+
+- ✅ Dark mode toggle (system preference, localStorage)
+- ✅ Export to CSV/PNG/PDF (dashboard, stock table, summary)
+- ✅ Enhanced mobile UI (responsive layout, horizontal scroll for tables)
+- ✅ Data loader uses filename date instead of mtime for latest data
+
 ## Planned for Phase 2 (Future)
 
 ### Historical Analysis
 
-- ⏳ Historical trends page
+- ⏳ Historical trends page (partially implemented)
 - ⏳ Time-series charts with zoom
 - ⏳ Projection accuracy tracking
 - ⏳ Compare multiple stocks
 
-### UX Enhancements
+### UX Enhancements (Remaining)
 
-- ⏳ Dark mode toggle
 - ⏳ Watchlist feature
-- ⏳ Export to CSV/Excel
+- ⏳ Export to Excel
 - ⏳ Keyboard shortcuts
-- ⏳ Enhanced mobile UI
 
 ### Advanced Features
 

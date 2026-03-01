@@ -452,8 +452,7 @@ We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed gu
 
 1. **Alert & notification system** – Price/screening/recommendation alerts, SNS/email/webhook (design ready; see [ALERTING_DESIGN.md](docs/ALERTING_DESIGN.md))
 2. **Historical trends** – Multi-day data aggregation, projection accuracy tracking, trend charts
-3. **Dashboard enhancements** – Dark mode, mobile optimization, export improvements
-4. Additional exchanges, screening filters (RSI/MACD), enhanced AI summaries
+3. Additional exchanges, screening filters (RSI/MACD), enhanced AI summaries
 
 **Quick Start:**
 

@@ -282,10 +282,15 @@ The tracker now includes a dashboard, but still lacks:
 
 **Effort:** Ongoing
 
+**Completed:**
+
+- [x] Dark mode toggle
+- [x] Export (CSV/PNG/PDF)
+- [x] Mobile optimization
+
 **What to Build:**
 
 - [ ] Projection accuracy views
-- [ ] Export enhancements (CSV/PNG/PDF)
 - [ ] Additional KPI cards and filtering
  
 ---
