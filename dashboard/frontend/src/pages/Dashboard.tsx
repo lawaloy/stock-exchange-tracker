@@ -95,7 +95,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onDataLoaded }) => {
 
     } catch (err) {
       console.error('Error fetching dashboard data:', err);
-      setError('Failed to load dashboard data. Please try again.');
+      setError('Service is temporarily unavailable. Please try again later.');
     } finally {
       setLoading(false);
     }
