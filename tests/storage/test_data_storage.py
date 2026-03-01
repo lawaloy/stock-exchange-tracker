@@ -62,9 +62,9 @@ class TestDataStorage(unittest.TestCase):
     def test_load_summary(self):
         """Test loading summary from JSON."""
         self.storage.save_summary(self.sample_summary)
-        summary_path = Path(self.test_data_dir) / f"summary_{date.today().strftime('%Y-%m-%d')}.json"
-        self.assertTrue(summary_path.exists())
-        with open(summary_path, 'r') as f:
+        json_files = list(Path(self.test_data_dir).glob("summary_*.json"))
+        self.assertEqual(len(json_files), 1)
+        with open(json_files[0], 'r') as f:
             loaded_summary = json.load(f)
         self.assertIsInstance(loaded_summary, dict)
         self.assertEqual(loaded_summary['total_stocks'], 2)

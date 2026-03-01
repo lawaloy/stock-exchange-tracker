@@ -82,6 +82,21 @@ async def health():
     return {"status": "healthy"}
 
 
+@app.get("/api/data-info")
+async def data_info():
+    """Data status: path, latest date, and whether we need to fetch for the most recent trading day."""
+    from dashboard.backend.services.data_loader import get_data_loader, get_most_recent_trading_day
+    loader = get_data_loader()
+    target_trading_day = get_most_recent_trading_day()
+    return {
+        "data_dir": str(loader.data_dir),
+        "latest_date": loader.get_latest_date(),
+        "target_trading_day": target_trading_day,
+        "needs_fetch": loader.needs_fetch_for_latest_trading_day(),
+        "available_dates": loader.get_available_dates()[:5],
+    }
+
+
 @app.get("/api/summary")
 async def api_summary():
     """Market summary (AI or demo)."""

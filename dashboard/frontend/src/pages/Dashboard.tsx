@@ -12,9 +12,10 @@ import type { MarketOverview, ProjectionsSummary, StockMover, Opportunity } from
 
 interface DashboardProps {
   onDataLoaded?: (date: string) => void;
+  refreshKey?: number;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ onDataLoaded }) => {
+const Dashboard: React.FC<DashboardProps> = ({ onDataLoaded, refreshKey = 0 }) => {
   const [marketOverview, setMarketOverview] = useState<MarketOverview | null>(null);
   const [projectionsSummary, setProjectionsSummary] = useState<ProjectionsSummary | null>(null);
   const [gainers, setGainers] = useState<StockMover[]>([]);
@@ -27,13 +28,21 @@ const Dashboard: React.FC<DashboardProps> = ({ onDataLoaded }) => {
   const [secondaryError, setSecondaryError] = useState<string | null>(null);
   const [selectedStock, setSelectedStock] = useState<string | null>(null);
   const dashboardRef = useRef<HTMLDivElement>(null);
+  const isInitialMount = useRef(true);
 
   useEffect(() => {
-    fetchDashboardData();
+    fetchDashboardData(false);
   }, []);
 
-  const fetchDashboardData = async () => {
-    setLoading(true);
+  useEffect(() => {
+    if (isInitialMount.current) return;
+    fetchDashboardData(true);
+  }, [refreshKey]);
+
+  const fetchDashboardData = async (silent = false) => {
+    if (!silent) {
+      setLoading(true);
+    }
     setError(null);
     setSecondaryError(null);
     
@@ -53,7 +62,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onDataLoaded }) => {
       }
 
       // Phase 2: secondary data loads in background
-      setSecondaryLoading(true);
+      if (!silent) setSecondaryLoading(true);
       try {
         const [
           gainersRes,
@@ -88,9 +97,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onDataLoaded }) => {
         setAllOpportunities(combined);
       } catch (secondaryErr) {
         console.error('Error fetching secondary data:', secondaryErr);
-        setSecondaryError('Some sections failed to load. You can retry.');
+        if (!silent) setSecondaryError('Some sections failed to load. You can retry.');
       } finally {
-        setSecondaryLoading(false);
+        if (!silent) setSecondaryLoading(false);
       }
 
     } catch (err) {
@@ -98,6 +107,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onDataLoaded }) => {
       setError('Service is temporarily unavailable. Please try again later.');
     } finally {
       setLoading(false);
+      if (!silent) isInitialMount.current = false;
     }
   };
 
@@ -118,7 +128,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onDataLoaded }) => {
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded">
           {error}
           <button
-            onClick={fetchDashboardData}
+            onClick={() => fetchDashboardData(false)}
             className="ml-4 underline"
           >
             Retry
@@ -232,7 +242,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onDataLoaded }) => {
         {secondaryError && (
           <div className="mt-4 text-sm text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 px-3 py-2 rounded">
             {secondaryError}
-            <button onClick={fetchDashboardData} className="ml-3 underline">
+            <button onClick={() => fetchDashboardData(false)} className="ml-3 underline">
               Retry
             </button>
           </div>
