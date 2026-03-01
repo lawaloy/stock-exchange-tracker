@@ -31,6 +31,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e .[dev]
+          pip install -r dashboard/backend/requirements.txt
 
       - name: Run tests
         run: |
