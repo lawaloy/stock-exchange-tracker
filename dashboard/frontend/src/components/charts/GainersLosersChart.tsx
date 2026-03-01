@@ -29,7 +29,7 @@ const GainersLosersChart: React.FC<GainersLosersChartProps> = ({ gainers, losers
 
   return (
     <div className="card p-6">
-      <h3 className="text-lg font-semibold mb-4">Top Movers</h3>
+      <h3 className="text-lg font-semibold mb-4 dark:text-slate-100">Top Movers</h3>
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={data} layout="vertical">
           <CartesianGrid strokeDasharray="3 3" />
@@ -54,13 +54,13 @@ const GainersLosersChart: React.FC<GainersLosersChartProps> = ({ gainers, losers
         {data.map((item) => (
           <div
             key={`${item.symbol}-${item.type}`}
-            className="flex items-center justify-between rounded-md border border-slate-200 px-3 py-2 text-sm"
+            className="flex items-center justify-between rounded-md border border-slate-200 dark:border-slate-600 px-3 py-2 text-sm"
           >
             <div className="flex items-center gap-2">
               <CompanyLogo symbol={item.symbol} size={20} />
-              <span className="font-medium text-slate-900">{item.symbol}</span>
+              <span className="font-medium text-slate-900 dark:text-slate-100">{item.symbol}</span>
             </div>
-            <span className={item.change >= 0 ? 'text-green-600' : 'text-red-600'}>
+            <span className={item.change >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
               {item.change >= 0 ? '+' : ''}
               {item.change.toFixed(2)}%
             </span>

@@ -63,14 +63,14 @@ const StockDetailModal: React.FC<StockDetailModalProps> = ({ symbol, isOpen, onC
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-3xl transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+              <Dialog.Panel className="w-full max-w-3xl transform overflow-hidden rounded-2xl bg-white dark:bg-slate-800 p-6 text-left align-middle shadow-xl transition-all">
                 <div className="flex items-start justify-between mb-4">
-                  <Dialog.Title as="h3" className="text-2xl font-bold text-slate-900">
+                  <Dialog.Title as="h3" className="text-2xl font-bold text-slate-900 dark:text-slate-100">
                     {loading ? 'Loading...' : stockDetail ? `${stockDetail.symbol} - ${getCompanyName(stockDetail.symbol, stockDetail.name)}` : symbol}
                   </Dialog.Title>
                   <button
                     onClick={onClose}
-                    className="text-slate-400 hover:text-slate-600"
+                    className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                   >
                     <XMarkIcon className="h-6 w-6" />
                   </button>
@@ -83,7 +83,7 @@ const StockDetailModal: React.FC<StockDetailModalProps> = ({ symbol, isOpen, onC
                 )}
 
                 {error && (
-                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                  <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded">
                     {error}
                   </div>
                 )}
@@ -92,10 +92,10 @@ const StockDetailModal: React.FC<StockDetailModalProps> = ({ symbol, isOpen, onC
                   <div className="space-y-6">
                     {/* Current Price */}
                     <div>
-                      <div className="flex items-baseline space-x-3">
-                        <span className="text-3xl font-bold">{formatPrice(stockDetail.currentData.price)}</span>
+                      <div className="flex items-baseline space-x-3 flex-wrap">
+                        <span className="text-3xl font-bold dark:text-slate-100">{formatPrice(stockDetail.currentData.price)}</span>
                         <span className={`text-lg font-medium ${
-                          stockDetail.currentData.changePercent >= 0 ? 'text-green-600' : 'text-red-600'
+                          stockDetail.currentData.changePercent >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                         }`}>
                           {formatPercentage(stockDetail.currentData.changePercent)} 
                           ({formatPrice(Math.abs(stockDetail.currentData.change))})
@@ -105,27 +105,27 @@ const StockDetailModal: React.FC<StockDetailModalProps> = ({ symbol, isOpen, onC
 
                     {/* Projection */}
                     {stockDetail.projection && (
-                      <div className="bg-slate-50 rounded-lg p-4">
-                        <h4 className="font-semibold text-sm text-slate-600 mb-3">5-Day Projection</h4>
+                      <div className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-4">
+                        <h4 className="font-semibold text-sm text-slate-600 dark:text-slate-400 mb-3">5-Day Projection</h4>
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <p className="text-sm text-slate-600">Target Price</p>
-                            <p className="text-xl font-semibold">{formatPrice(stockDetail.projection.targetPrice)}</p>
+                            <p className="text-sm text-slate-600 dark:text-slate-400">Target Price</p>
+                            <p className="text-xl font-semibold dark:text-slate-100">{formatPrice(stockDetail.projection.targetPrice)}</p>
                             <p className={`text-sm ${
-                              stockDetail.projection.expectedChange >= 0 ? 'text-green-600' : 'text-red-600'
+                              stockDetail.projection.expectedChange >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                             }`}>
                               {formatPercentage(stockDetail.projection.expectedChange)}
                             </p>
                           </div>
                           <div className="flex items-start space-x-4">
                             <div>
-                              <p className="text-sm text-slate-600">Recommendation</p>
+                              <p className="text-sm text-slate-600 dark:text-slate-400">Recommendation</p>
                               <span className={`inline-block mt-1 badge ${getRecommendationColor(stockDetail.projection.recommendation)}`}>
                                 {stockDetail.projection.recommendation}
                               </span>
                             </div>
                             <div>
-                              <p className="text-sm text-slate-600">Risk</p>
+                              <p className="text-sm text-slate-600 dark:text-slate-400">Risk</p>
                               <span className={`inline-block mt-1 badge ${getRiskColor(stockDetail.projection.risk)}`}>
                                 {stockDetail.projection.risk}
                               </span>
@@ -133,8 +133,8 @@ const StockDetailModal: React.FC<StockDetailModalProps> = ({ symbol, isOpen, onC
                           </div>
                         </div>
                         <div className="mt-3">
-                          <p className="text-sm text-slate-600">Confidence: {stockDetail.projection.confidence}%</p>
-                          <div className="w-full bg-slate-200 rounded-full h-2 mt-1">
+                          <p className="text-sm text-slate-600 dark:text-slate-400">Confidence: {stockDetail.projection.confidence}%</p>
+                          <div className="w-full bg-slate-200 dark:bg-slate-600 rounded-full h-2 mt-1">
                             <div
                               className="bg-blue-500 h-2 rounded-full"
                               style={{ width: `${stockDetail.projection.confidence}%` }}
@@ -150,28 +150,28 @@ const StockDetailModal: React.FC<StockDetailModalProps> = ({ symbol, isOpen, onC
 
                     {/* Key Metrics */}
                     <div>
-                      <h4 className="font-semibold text-sm text-slate-600 mb-3">Key Metrics</h4>
+                      <h4 className="font-semibold text-sm text-slate-600 dark:text-slate-400 mb-3">Key Metrics</h4>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <p className="text-sm text-slate-600">Volume</p>
-                          <p className="text-lg font-semibold">{formatVolume(stockDetail.currentData.volume)}</p>
+                          <p className="text-sm text-slate-600 dark:text-slate-400">Volume</p>
+                          <p className="text-lg font-semibold dark:text-slate-100">{formatVolume(stockDetail.currentData.volume)}</p>
                         </div>
                         {stockDetail.currentData.marketCap && (
                           <div>
-                            <p className="text-sm text-slate-600">Market Cap</p>
-                            <p className="text-lg font-semibold">{formatVolume(stockDetail.currentData.marketCap)}</p>
+                            <p className="text-sm text-slate-600 dark:text-slate-400">Market Cap</p>
+                            <p className="text-lg font-semibold dark:text-slate-100">{formatVolume(stockDetail.currentData.marketCap)}</p>
                           </div>
                         )}
                         {stockDetail.technical?.momentum !== undefined && (
                           <div>
-                            <p className="text-sm text-slate-600">Momentum</p>
-                            <p className="text-lg font-semibold">{stockDetail.technical.momentum.toFixed(1)}</p>
+                            <p className="text-sm text-slate-600 dark:text-slate-400">Momentum</p>
+                            <p className="text-lg font-semibold dark:text-slate-100">{stockDetail.technical.momentum.toFixed(1)}</p>
                           </div>
                         )}
                         {stockDetail.technical?.volatility !== undefined && (
                           <div>
-                            <p className="text-sm text-slate-600">Volatility</p>
-                            <p className="text-lg font-semibold">{stockDetail.technical.volatility.toFixed(1)}%</p>
+                            <p className="text-sm text-slate-600 dark:text-slate-400">Volatility</p>
+                            <p className="text-lg font-semibold dark:text-slate-100">{stockDetail.technical.volatility.toFixed(1)}%</p>
                           </div>
                         )}
                       </div>

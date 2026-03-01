@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import axios from 'axios';
+import ExportButton from '../components/common/ExportButton';
 import api, { summaryApi } from '../services/api';
 import { formatDate } from '../utils/formatters';
 
@@ -11,6 +12,7 @@ const Summary: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const summaryRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchSummary();
@@ -67,12 +69,12 @@ const Summary: React.FC = () => {
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="animate-pulse bg-white rounded-lg shadow p-8">
-          <div className="h-4 bg-slate-200 rounded w-1/4 mb-4" />
+        <div className="animate-pulse card p-8">
+          <div className="h-4 bg-slate-200 dark:bg-slate-600 rounded w-1/4 mb-4" />
           <div className="space-y-2">
-            <div className="h-3 bg-slate-200 rounded" />
-            <div className="h-3 bg-slate-200 rounded" />
-            <div className="h-3 bg-slate-200 rounded w-3/4" />
+            <div className="h-3 bg-slate-200 dark:bg-slate-600 rounded" />
+            <div className="h-3 bg-slate-200 dark:bg-slate-600 rounded" />
+            <div className="h-3 bg-slate-200 dark:bg-slate-600 rounded w-3/4" />
           </div>
         </div>
       </div>
@@ -83,8 +85,8 @@ const Summary: React.FC = () => {
     const showFetchButton = error === 'show-fetch-button';
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-slate-50 border border-slate-200 rounded-lg p-6">
-          <p className="text-slate-700 mb-4">
+        <div className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg p-6">
+          <p className="text-slate-700 dark:text-slate-300 mb-4">
             {showFetchButton
               ? 'No summary available yet.'
               : error}
@@ -105,19 +107,20 @@ const Summary: React.FC = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
-          <h1 className="text-xl font-semibold text-slate-900">Market Summary</h1>
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-slate-500">
+    <div ref={summaryRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="card">
+        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-600 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Market Summary</h1>
+          <div className="flex items-center gap-3 flex-wrap">
+            <ExportButton captureRef={summaryRef} formats={['png', 'pdf']} label="Summary" />
+            <span className="text-sm text-slate-500 dark:text-slate-400">
               {date ? formatDate(date) : '—'}
             </span>
             <span
               className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
                 source === 'ai'
-                  ? 'bg-blue-100 text-blue-800'
-                  : 'bg-slate-100 text-slate-700'
+                  ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
+                  : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
               }`}
             >
               {source === 'ai' ? 'Expert Summary' : 'Summary'}
@@ -125,7 +128,7 @@ const Summary: React.FC = () => {
           </div>
         </div>
         <div className="px-6 py-6">
-          <p className="text-slate-700 leading-relaxed whitespace-pre-wrap">
+          <p className="text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
             {summary}
           </p>
         </div>

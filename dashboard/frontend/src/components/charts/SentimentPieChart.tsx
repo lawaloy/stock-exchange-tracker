@@ -23,7 +23,7 @@ const SentimentPieChart: React.FC<SentimentPieChartProps> = ({ recommendations }
 
   return (
     <div className="card p-6">
-      <h3 className="text-lg font-semibold mb-4">Recommendation Distribution</h3>
+      <h3 className="text-lg font-semibold mb-4 dark:text-slate-100">Recommendation Distribution</h3>
       <ResponsiveContainer width="100%" height={300}>
         <PieChart>
           <Pie

@@ -22,27 +22,40 @@ class DataLoader:
         if not self.data_dir.exists():
             raise ValueError(f"Data directory not found: {self.data_dir}")
     
-    def _get_latest_file(self, pattern: str) -> Optional[Path]:
-        """Get the most recent file matching the pattern"""
+    def _get_latest_file(self, pattern: str, sort_by_date: bool = False) -> Optional[Path]:
+        """Get the most recent file matching the pattern.
+        When sort_by_date=True, uses date in filename (YYYY-MM-DD) for daily_data/projections/summary.
+        """
         files = list(self.data_dir.glob(pattern))
         if not files:
             return None
-        # Sort by modification time, most recent first
+        if sort_by_date:
+            # Extract date from filename (e.g. daily_data_2026-02-14.csv) and pick latest
+            def parse_date(f: Path) -> str:
+                stem = f.stem
+                if "daily_data_" in stem:
+                    return stem.replace("daily_data_", "")
+                if "projections_" in stem:
+                    return stem.replace("projections_", "")
+                if "summary_" in stem:
+                    return stem.replace("summary_", "")
+                return ""
+            dated = [(f, parse_date(f)) for f in files if parse_date(f)]
+            if not dated:
+                return max(files, key=lambda f: f.stat().st_mtime)
+            dated.sort(key=lambda x: x[1], reverse=True)
+            return dated[0][0]
         return max(files, key=lambda f: f.stat().st_mtime)
-    
+
     def get_latest_date(self) -> Optional[str]:
-        """Get the date of the most recent data"""
-        latest_file = self._get_latest_file("daily_data_*.csv")
-        if not latest_file:
-            return None
-        # Extract date from filename: daily_data_2026-01-11.csv
-        date_str = latest_file.stem.replace("daily_data_", "")
-        return date_str
+        """Get the date of the most recent data (by date in filename, not file mtime)"""
+        dates = self.get_available_dates()
+        return dates[0] if dates else None
     
     def load_daily_data(self, date: Optional[str] = None) -> pd.DataFrame:
         """Load daily stock data CSV"""
         if date is None:
-            file_path = self._get_latest_file("daily_data_*.csv")
+            file_path = self._get_latest_file("daily_data_*.csv", sort_by_date=True)
             if file_path is None:
                 raise ValueError("No daily data files found")
         else:
@@ -56,7 +69,7 @@ class DataLoader:
     def load_projections(self, date: Optional[str] = None) -> pd.DataFrame:
         """Load projections CSV"""
         if date is None:
-            file_path = self._get_latest_file("projections_*.csv")
+            file_path = self._get_latest_file("projections_*.csv", sort_by_date=True)
             if file_path is None:
                 raise ValueError("No projection files found")
         else:
@@ -70,7 +83,7 @@ class DataLoader:
     def load_summary(self, date: Optional[str] = None) -> Dict:
         """Load summary JSON"""
         if date is None:
-            file_path = self._get_latest_file("summary_*.json")
+            file_path = self._get_latest_file("summary_*.json", sort_by_date=True)
             if file_path is None:
                 raise ValueError("No summary files found")
         else:

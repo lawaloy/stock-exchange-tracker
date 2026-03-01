@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
-import { ArrowPathIcon } from '@heroicons/react/24/outline';
+import { ArrowPathIcon, SunIcon, MoonIcon } from '@heroicons/react/24/outline';
+import { useTheme } from '../../contexts/ThemeContext';
 import api from '../../services/api';
 
 interface HeaderProps {
@@ -9,6 +10,7 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ dataDate, onRefreshComplete, onQuickRefresh }) => {
+  const { theme, toggleTheme } = useTheme();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshMessage, setRefreshMessage] = useState('');
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -102,23 +104,23 @@ const Header: React.FC<HeaderProps> = ({ dataDate, onRefreshComplete, onQuickRef
   };
 
   return (
-    <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
+    <header className="bg-white border-b border-slate-200 dark:bg-slate-800 dark:border-slate-700 sticky top-0 z-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center space-x-4">
-            <h1 className="text-2xl font-bold text-slate-900">
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
               📊 Stock Exchange Tracker
             </h1>
             {dataDate && (
-              <div className="text-sm text-slate-600">
+              <div className="text-sm text-slate-600 dark:text-slate-400">
                 <span className="font-medium">Data from:</span>{' '}
                 <span className="font-semibold">{dataDate}</span>
               </div>
             )}
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
             <div
-              className={`text-sm text-slate-600 max-w-xs truncate transition-opacity duration-200 ${
+              className={`text-sm text-slate-600 dark:text-slate-400 max-w-xs truncate transition-opacity duration-200 ${
                 refreshMessage ? 'opacity-100' : 'opacity-0'
               }`}
             >
@@ -137,8 +139,8 @@ const Header: React.FC<HeaderProps> = ({ dataDate, onRefreshComplete, onQuickRef
               disabled={isRefreshing}
               className={`flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                 isRefreshing
-                  ? 'bg-slate-300 text-slate-600 cursor-not-allowed'
-                  : 'bg-blue-500 text-white hover:bg-blue-600'
+                  ? 'bg-slate-300 text-slate-600 cursor-not-allowed dark:bg-slate-600 dark:text-slate-400'
+                  : 'bg-blue-500 text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700'
               }`}
               title="Reload saved data instantly and fetch fresh data in background"
             >
@@ -154,6 +156,18 @@ const Header: React.FC<HeaderProps> = ({ dataDate, onRefreshComplete, onQuickRef
                 <span>Cancel</span>
               </button>
             )}
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-md text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700 transition-colors"
+              title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              aria-label="Toggle theme"
+            >
+              {theme === 'dark' ? (
+                <SunIcon className="h-5 w-5" />
+              ) : (
+                <MoonIcon className="h-5 w-5" />
+              )}
+            </button>
           </div>
         </div>
       </div>

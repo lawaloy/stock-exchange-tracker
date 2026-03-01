@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { marketApi, projectionsApi } from '../services/api';
 import KPICard from '../components/cards/KPICard';
 import OpportunityCard from '../components/cards/OpportunityCard';
@@ -6,6 +6,7 @@ import GainersLosersChart from '../components/charts/GainersLosersChart';
 import SentimentPieChart from '../components/charts/SentimentPieChart';
 import StockTable from '../components/tables/StockTable';
 import StockDetailModal from '../components/modals/StockDetailModal';
+import ExportButton from '../components/common/ExportButton';
 import { formatPercentage, formatDate } from '../utils/formatters';
 import type { MarketOverview, ProjectionsSummary, StockMover, Opportunity } from '../types';
 
@@ -25,6 +26,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onDataLoaded }) => {
   const [error, setError] = useState<string | null>(null);
   const [secondaryError, setSecondaryError] = useState<string | null>(null);
   const [selectedStock, setSelectedStock] = useState<string | null>(null);
+  const dashboardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchDashboardData();
@@ -101,10 +103,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onDataLoaded }) => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center min-h-[50vh]">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-slate-600">Loading dashboard...</p>
+          <p className="mt-4 text-slate-600 dark:text-slate-400">Loading dashboard...</p>
         </div>
       </div>
     );
@@ -113,7 +115,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onDataLoaded }) => {
   if (error) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded">
           {error}
           <button
             onClick={fetchDashboardData}
@@ -127,7 +129,17 @@ const Dashboard: React.FC<DashboardProps> = ({ onDataLoaded }) => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div ref={dashboardRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 sr-only">Dashboard</h2>
+        <ExportButton
+          stocks={allOpportunities}
+          captureRef={dashboardRef}
+          formats={['csv', 'png', 'pdf']}
+          label="Dashboard"
+          className="ml-auto"
+        />
+      </div>
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <KPICard
@@ -162,18 +174,18 @@ const Dashboard: React.FC<DashboardProps> = ({ onDataLoaded }) => {
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {secondaryLoading ? (
-          <div className="bg-white border border-slate-200 rounded-lg p-6 animate-pulse">
-            <div className="h-5 w-32 bg-slate-200 rounded mb-4"></div>
-            <div className="h-48 bg-slate-200 rounded"></div>
+          <div className="card p-6 animate-pulse">
+            <div className="h-5 w-32 bg-slate-200 dark:bg-slate-600 rounded mb-4"></div>
+            <div className="h-48 bg-slate-200 dark:bg-slate-600 rounded"></div>
           </div>
         ) : (
           <GainersLosersChart gainers={gainers} losers={losers} />
         )}
         {projectionsSummary?.recommendations && (
           secondaryLoading ? (
-            <div className="bg-white border border-slate-200 rounded-lg p-6 animate-pulse">
-              <div className="h-5 w-44 bg-slate-200 rounded mb-4"></div>
-              <div className="h-48 bg-slate-200 rounded-full mx-auto w-48"></div>
+            <div className="card p-6 animate-pulse">
+              <div className="h-5 w-44 bg-slate-200 dark:bg-slate-600 rounded mb-4"></div>
+              <div className="h-48 bg-slate-200 dark:bg-slate-600 rounded-full mx-auto w-48"></div>
             </div>
           ) : (
             <SentimentPieChart recommendations={projectionsSummary.recommendations} />
@@ -184,16 +196,16 @@ const Dashboard: React.FC<DashboardProps> = ({ onDataLoaded }) => {
       {/* Strong Buy Opportunities */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold text-slate-900">
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100">
             STRONG BUY Opportunities ({strongBuyOpps.length})
           </h2>
         </div>
         {secondaryLoading ? (
           <div className="space-y-3">
             {[...Array(3)].map((_, idx) => (
-              <div key={idx} className="bg-white border border-slate-200 rounded-lg p-4 animate-pulse">
-                <div className="h-4 w-40 bg-slate-200 rounded mb-2"></div>
-                <div className="h-3 w-64 bg-slate-200 rounded"></div>
+              <div key={idx} className="card p-4 animate-pulse">
+                <div className="h-4 w-40 bg-slate-200 dark:bg-slate-600 rounded mb-2"></div>
+                <div className="h-3 w-64 bg-slate-200 dark:bg-slate-600 rounded"></div>
               </div>
             ))}
           </div>
@@ -210,7 +222,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onDataLoaded }) => {
             </div>
             {strongBuyOpps.length > 5 && (
               <div className="mt-4 text-center">
-                <p className="text-sm text-slate-600">
+                <p className="text-sm text-slate-600 dark:text-slate-400">
                   + {strongBuyOpps.length - 5} more opportunities (see table below)
                 </p>
               </div>
@@ -218,7 +230,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onDataLoaded }) => {
           </>
         )}
         {secondaryError && (
-          <div className="mt-4 text-sm text-amber-700 bg-amber-50 border border-amber-200 px-3 py-2 rounded">
+          <div className="mt-4 text-sm text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 px-3 py-2 rounded">
             {secondaryError}
             <button onClick={fetchDashboardData} className="ml-3 underline">
               Retry
@@ -229,11 +241,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onDataLoaded }) => {
 
       {/* Stock Table */}
       {secondaryLoading ? (
-        <div className="bg-white border border-slate-200 rounded-lg p-6 animate-pulse">
-          <div className="h-5 w-32 bg-slate-200 rounded mb-4"></div>
+        <div className="card p-6 animate-pulse">
+          <div className="h-5 w-32 bg-slate-200 dark:bg-slate-600 rounded mb-4"></div>
           <div className="space-y-2">
             {[...Array(6)].map((_, idx) => (
-              <div key={idx} className="h-4 bg-slate-200 rounded"></div>
+              <div key={idx} className="h-4 bg-slate-200 dark:bg-slate-600 rounded"></div>
             ))}
           </div>
         </div>

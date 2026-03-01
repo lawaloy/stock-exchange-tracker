@@ -94,10 +94,10 @@ const HistoricalTrends: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
+      <div className="flex justify-center items-center min-h-[50vh]">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-slate-600">Loading historical trends...</p>
+          <p className="mt-4 text-slate-600 dark:text-slate-400">Loading historical trends...</p>
         </div>
       </div>
     );
@@ -106,7 +106,7 @@ const HistoricalTrends: React.FC = () => {
   if (error) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded">
+        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-400 px-4 py-3 rounded">
           <p>{error}</p>
           <p className="mt-2 text-sm">Use the Fetch New button above to fetch data.</p>
           <button onClick={fetchData} className="mt-4 underline font-medium">
@@ -120,9 +120,9 @@ const HistoricalTrends: React.FC = () => {
   if (data.length === 0) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-slate-50 border border-slate-200 rounded-lg p-8 text-center">
-          <p className="text-slate-600">No historical data available for the selected period.</p>
-          <p className="text-sm text-slate-500 mt-2">
+        <div className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg p-8 text-center">
+          <p className="text-slate-600 dark:text-slate-400">No historical data available for the selected period.</p>
+          <p className="text-sm text-slate-500 dark:text-slate-500 mt-2">
             Use Fetch New regularly to build up historical data over time.
           </p>
         </div>
@@ -133,22 +133,22 @@ const HistoricalTrends: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-slate-900">Historical Trends</h2>
-        <p className="mt-1 text-slate-600 text-sm">
+        <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100">Historical Trends</h2>
+        <p className="mt-1 text-slate-600 dark:text-slate-400 text-sm">
           How your stock projections have changed over time — market-wide and by company.
         </p>
       </div>
 
       <div className="flex flex-wrap items-center gap-4 mb-8">
         <div className="flex items-center gap-2">
-          <label htmlFor="days" className="text-sm font-medium text-slate-700">
+          <label htmlFor="days" className="text-sm font-medium text-slate-700 dark:text-slate-300">
             Time range:
           </label>
           <select
             id="days"
             value={days}
             onChange={(e) => setDays(Number(e.target.value))}
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+            className="rounded-md border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
           >
             {DAY_OPTIONS.map((d) => (
               <option key={d} value={d}>
@@ -158,7 +158,7 @@ const HistoricalTrends: React.FC = () => {
           </select>
         </div>
         {dateRange && (
-          <span className="text-sm text-slate-500">
+          <span className="text-sm text-slate-500 dark:text-slate-400">
             {formatDate(dateRange.first)} to {formatDate(dateRange.last)}
           </span>
         )}
@@ -167,14 +167,14 @@ const HistoricalTrends: React.FC = () => {
       <div className="space-y-8">
         {/* Market overview section */}
         <section>
-          <h3 className="text-lg font-semibold text-slate-800 mb-4">Market overview</h3>
-          <p className="text-sm text-slate-600 mb-6">
+          <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">Market overview</h3>
+          <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">
             Aggregated across all tracked stocks for each day.
           </p>
           <div className="space-y-8">
         <div className="card p-6">
-          <h4 className="font-medium text-slate-800 mb-4">Projection confidence</h4>
-          <p className="text-sm text-slate-500 mb-4">How confident the model was in its price targets (0–100%).</p>
+          <h4 className="font-medium text-slate-800 dark:text-slate-100 mb-4">Projection confidence</h4>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">How confident the model was in its price targets (0–100%).</p>
           <ResponsiveContainer width="100%" height={280}>
             <LineChart data={data}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -199,8 +199,8 @@ const HistoricalTrends: React.FC = () => {
         </div>
 
         <div className="card p-6">
-          <h4 className="font-medium text-slate-800 mb-4">Expected price change</h4>
-          <p className="text-sm text-slate-500 mb-4">Average expected % move across all stocks.</p>
+          <h4 className="font-medium text-slate-800 dark:text-slate-100 mb-4">Expected price change</h4>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Average expected % move across all stocks.</p>
           <ResponsiveContainer width="100%" height={280}>
             <LineChart data={data}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -225,8 +225,8 @@ const HistoricalTrends: React.FC = () => {
         </div>
 
         <div className="card p-6">
-          <h4 className="font-medium text-slate-800 mb-4">Buy vs sell recommendations</h4>
-          <p className="text-sm text-slate-500 mb-4">How many stocks were rated STRONG BUY, BUY, HOLD, etc.</p>
+          <h4 className="font-medium text-slate-800 dark:text-slate-100 mb-4">Buy vs sell recommendations</h4>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">How many stocks were rated STRONG BUY, BUY, HOLD, etc.</p>
           <ResponsiveContainer width="100%" height={320}>
             <AreaChart data={data}>
               <CartesianGrid strokeDasharray="3 3" />
