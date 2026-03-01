@@ -182,11 +182,10 @@ npm run build
 
 **Next Priority:**
 
-1. **Historical trends page** – Multi-day data, projection accuracy, trend charts (partially implemented)
-2. **Dark mode** – Theme toggle
-3. **Mobile optimization** – Responsive layout improvements
-4. **Export enhancements** – CSV/PNG/PDF export
-5. **Performance** – Code splitting, lazy loading
+1. **Historical trends page** – Multi-day data, projection accuracy tracking, trend charts (partially implemented)
+2. **Performance** – Code splitting, lazy loading
+3. **Watchlist** – Save favorite stocks
+4. **Keyboard shortcuts** – Quick navigation
 
 See [DASHBOARD_DESIGN.md](../docs/DASHBOARD_DESIGN.md) for full Phase 2 design.
 
