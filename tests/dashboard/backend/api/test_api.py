@@ -75,11 +75,20 @@ def mock_data_loader(temp_data_dir, sample_daily_data, sample_summary):
 
 @pytest.fixture
 def client(mock_data_loader):
-    """Create TestClient with patched data loader."""
-    with patch("dashboard.backend.api.market.get_data_loader", return_value=mock_data_loader):
-        with patch("dashboard.backend.api.projections.get_data_loader", return_value=mock_data_loader):
-            with patch("dashboard.backend.api.stocks.get_data_loader", return_value=mock_data_loader):
-                with patch("dashboard.backend.api.history.get_data_loader", return_value=mock_data_loader):
+    """Create TestClient with patched data loader.
+
+    Import API modules first so they exist in the package namespace, then patch
+    get_data_loader where it is used. Patches must be where the name is looked up
+    (in the using module), not where it is defined.
+    """
+    import dashboard.backend.api.market
+    import dashboard.backend.api.projections
+    import dashboard.backend.api.stocks
+    import dashboard.backend.api.history
+    with patch.object(dashboard.backend.api.market, "get_data_loader", return_value=mock_data_loader):
+        with patch.object(dashboard.backend.api.projections, "get_data_loader", return_value=mock_data_loader):
+            with patch.object(dashboard.backend.api.stocks, "get_data_loader", return_value=mock_data_loader):
+                with patch.object(dashboard.backend.api.history, "get_data_loader", return_value=mock_data_loader):
                     from fastapi.testclient import TestClient
                     from dashboard.backend.main import app
                     yield TestClient(app)
@@ -151,11 +160,10 @@ class TestMarketAPIErrors:
 
     def test_summary_404_when_no_data(self, temp_data_dir):
         """Summary returns 404 when no summary files exist."""
-        with patch("dashboard.backend.api.market.get_data_loader") as mock:
-            mock_loader = MagicMock()
-            mock_loader.load_summary.side_effect = ValueError("No summary files found")
-            mock.return_value = mock_loader
-
+        import dashboard.backend.api.market
+        mock_loader = MagicMock()
+        mock_loader.load_summary.side_effect = ValueError("No summary files found")
+        with patch.object(dashboard.backend.api.market, "get_data_loader", return_value=mock_loader):
             from fastapi.testclient import TestClient
             from dashboard.backend.main import app
             client = TestClient(app)
