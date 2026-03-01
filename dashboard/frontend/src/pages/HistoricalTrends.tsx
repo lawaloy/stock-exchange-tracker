@@ -120,7 +120,7 @@ const HistoricalTrends: React.FC<HistoricalTrendsProps> = ({ refreshKey = 0 }) =
         <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-400 px-4 py-3 rounded">
           <p>{error}</p>
           <p className="mt-2 text-sm">Use the Fetch New button above to fetch data.</p>
-          <button onClick={fetchData} className="mt-4 underline font-medium">
+          <button onClick={() => fetchData()} className="mt-4 underline font-medium">
             Retry
           </button>
         </div>
