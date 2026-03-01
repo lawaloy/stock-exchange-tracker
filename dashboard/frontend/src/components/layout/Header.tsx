@@ -7,9 +7,11 @@ interface HeaderProps {
   dataDate?: string;
   onRefreshComplete?: () => void;
   onQuickRefresh?: () => void;
+  /** True when app is fetching latest data in background (no user action) */
+  backgroundFetching?: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ dataDate, onRefreshComplete, onQuickRefresh }) => {
+const Header: React.FC<HeaderProps> = ({ dataDate, onRefreshComplete, onQuickRefresh, backgroundFetching }) => {
   const { theme, toggleTheme } = useTheme();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshMessage, setRefreshMessage] = useState('');
@@ -121,10 +123,10 @@ const Header: React.FC<HeaderProps> = ({ dataDate, onRefreshComplete, onQuickRef
           <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
             <div
               className={`text-sm text-slate-600 dark:text-slate-400 max-w-xs truncate transition-opacity duration-200 ${
-                refreshMessage ? 'opacity-100' : 'opacity-0'
+                refreshMessage || backgroundFetching ? 'opacity-100' : 'opacity-0'
               }`}
             >
-              {refreshMessage || 'Status'}
+              {refreshMessage || (backgroundFetching ? 'Updating data...' : 'Status')}
             </div>
             <button
               onClick={handleQuickRefresh}

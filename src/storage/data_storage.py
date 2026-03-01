@@ -13,6 +13,16 @@ from typing import List, Dict, Optional
 from pathlib import Path
 
 
+def _data_date_for_filename() -> datetime.date:
+    """Use most recent trading day for filenames. If today is weekend, use last Friday."""
+    today = datetime.now().date()
+    if today.weekday() == 5:  # Saturday -> Friday
+        return today - timedelta(days=1)
+    if today.weekday() == 6:  # Sunday -> Friday
+        return today - timedelta(days=2)
+    return today
+
+
 class DataStorage:
     """Manages storage of stock market data in CSV format."""
     
@@ -27,9 +37,9 @@ class DataStorage:
         self.data_dir.mkdir(exist_ok=True)
     
     def _get_daily_file_path(self, date: datetime.date = None) -> Path:
-        """Get file path for daily data."""
+        """Get file path for daily data. Uses most recent trading day when date not specified."""
         if date is None:
-            date = datetime.now().date()
+            date = _data_date_for_filename()
         
         filename = f"daily_data_{date.strftime('%Y-%m-%d')}.csv"
         return self.data_dir / filename
@@ -88,7 +98,7 @@ class DataStorage:
             Path to saved file
         """
         if date is None:
-            date = datetime.now().date()
+            date = _data_date_for_filename()
         
         summary_path = self.data_dir / f"summary_{date.strftime('%Y-%m-%d')}.json"
         
@@ -113,7 +123,7 @@ class DataStorage:
             return None
         
         if date is None:
-            date = datetime.now().date()
+            date = _data_date_for_filename()
         
         # Convert projections dict to list of dicts for DataFrame
         projection_list = list(projections.values())

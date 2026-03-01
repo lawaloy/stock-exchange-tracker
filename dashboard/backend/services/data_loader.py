@@ -1,6 +1,7 @@
 """
 Data loading service for reading CSV and JSON files
 """
+import os
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 import pandas as pd
@@ -9,15 +10,44 @@ from datetime import datetime, timedelta
 from functools import lru_cache
 
 
+def _default_data_dir() -> Path:
+    """Resolve data directory: DATA_DIR env, or project root / data."""
+    env_dir = os.getenv("DATA_DIR")
+    if env_dir:
+        return Path(env_dir).resolve()
+    # Project root is 4 levels up from this file (dashboard/backend/services/data_loader.py)
+    project_root = Path(__file__).resolve().parent.parent.parent.parent
+    return project_root / "data"
+
+
+def _is_weekday(date_str: str) -> bool:
+    """True if date (YYYY-MM-DD) is Mon–Fri (stock market open)."""
+    try:
+        dt = datetime.strptime(date_str, "%Y-%m-%d")
+        return dt.weekday() < 5  # 0=Mon, 4=Fri, 5=Sat, 6=Sun
+    except ValueError:
+        return True  # Keep if we can't parse
+
+
+def get_most_recent_trading_day() -> str:
+    """Return the most recent trading day (YYYY-MM-DD). If today is weekend, returns last Friday."""
+    today = datetime.now().date()
+    # weekday: Mon=0, Fri=4, Sat=5, Sun=6
+    if today.weekday() == 5:  # Saturday -> Friday
+        today = today - timedelta(days=1)
+    elif today.weekday() == 6:  # Sunday -> Friday
+        today = today - timedelta(days=2)
+    return today.strftime("%Y-%m-%d")
+
+
 class DataLoader:
     """Loads and caches stock market data from CSV/JSON files"""
     
     def __init__(self, data_dir: Optional[Path] = None):
         if data_dir is None:
-            # Default to data directory in project root
-            self.data_dir = Path(__file__).parent.parent.parent.parent / "data"
+            self.data_dir = _default_data_dir()
         else:
-            self.data_dir = Path(data_dir)
+            self.data_dir = Path(data_dir).resolve()
         
         if not self.data_dir.exists():
             raise ValueError(f"Data directory not found: {self.data_dir}")
@@ -44,13 +74,26 @@ class DataLoader:
             if not dated:
                 return max(files, key=lambda f: f.stat().st_mtime)
             dated.sort(key=lambda x: x[1], reverse=True)
-            return dated[0][0]
+            # Prefer most recent trading day (weekday); market closed Sat/Sun
+            for f, d in dated:
+                if _is_weekday(d):
+                    return f
+            return dated[0][0]  # Fallback to most recent if all weekends
         return max(files, key=lambda f: f.stat().st_mtime)
 
     def get_latest_date(self) -> Optional[str]:
-        """Get the date of the most recent data (by date in filename, not file mtime)"""
+        """Get the date of the most recent trading-day data (skips weekends when market is closed)."""
         dates = self.get_available_dates()
+        for d in dates:
+            if _is_weekday(d):
+                return d
         return dates[0] if dates else None
+
+    def needs_fetch_for_latest_trading_day(self) -> bool:
+        """True if we don't have data for the most recent trading day (e.g. last Friday)."""
+        target = get_most_recent_trading_day()
+        dates = self.get_available_dates()
+        return target not in dates
     
     def load_daily_data(self, date: Optional[str] = None) -> pd.DataFrame:
         """Load daily stock data CSV"""

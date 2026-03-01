@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/react';
 import { ChevronDownIcon } from '@heroicons/react/20/solid';
 import {
@@ -19,7 +19,11 @@ import type { DailySummaryPoint, HistoricalPoint } from '../types';
 
 const DAY_OPTIONS = [7, 14, 30, 90];
 
-const HistoricalTrends: React.FC = () => {
+interface HistoricalTrendsProps {
+  refreshKey?: number;
+}
+
+const HistoricalTrends: React.FC<HistoricalTrendsProps> = ({ refreshKey = 0 }) => {
   const [data, setData] = useState<DailySummaryPoint[]>([]);
   const [dateRange, setDateRange] = useState<{ first: string; last: string } | null>(null);
   const [days, setDays] = useState(30);
@@ -31,6 +35,7 @@ const HistoricalTrends: React.FC = () => {
   const [selectedSymbol, setSelectedSymbol] = useState<string>('');
   const [stockHistory, setStockHistory] = useState<HistoricalPoint[]>([]);
   const [stockLoading, setStockLoading] = useState(false);
+  const isInitialMount = useRef(true);
 
   // Names come from summary API (saved at write time in projections/daily data)
   const symbols = symbolList.map((s) => {
@@ -42,8 +47,13 @@ const HistoricalTrends: React.FC = () => {
   });
 
   useEffect(() => {
-    fetchData();
+    fetchData(false);
   }, [days]);
+
+  useEffect(() => {
+    if (isInitialMount.current) return;
+    fetchData(true);
+  }, [refreshKey]);
 
   useEffect(() => {
     if (selectedSymbol) {
@@ -66,8 +76,8 @@ const HistoricalTrends: React.FC = () => {
     }
   };
 
-  const fetchData = async () => {
-    setLoading(true);
+  const fetchData = async (silent = false) => {
+    if (!silent) setLoading(true);
     setError(null);
     try {
       const response = await historyApi.getSummary(days);
@@ -84,11 +94,12 @@ const HistoricalTrends: React.FC = () => {
       }
     } catch (err) {
       console.error('Error fetching historical data:', err);
-      setError('Unable to load historical data. Please try again later.');
+      if (!silent) setError('Unable to load historical data. Please try again later.');
       setData([]);
       setDateRange(null);
     } finally {
       setLoading(false);
+      if (!silent) isInitialMount.current = false;
     }
   };
 
@@ -109,7 +120,7 @@ const HistoricalTrends: React.FC = () => {
         <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-400 px-4 py-3 rounded">
           <p>{error}</p>
           <p className="mt-2 text-sm">Use the Fetch New button above to fetch data.</p>
-          <button onClick={fetchData} className="mt-4 underline font-medium">
+          <button onClick={() => fetchData()} className="mt-4 underline font-medium">
             Retry
           </button>
         </div>

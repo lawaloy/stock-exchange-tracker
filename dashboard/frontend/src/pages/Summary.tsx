@@ -5,7 +5,11 @@ import ExportButton from '../components/common/ExportButton';
 import api, { summaryApi } from '../services/api';
 import { formatDate } from '../utils/formatters';
 
-const Summary: React.FC = () => {
+interface SummaryProps {
+  refreshKey?: number;
+}
+
+const Summary: React.FC<SummaryProps> = ({ refreshKey = 0 }) => {
   const [summary, setSummary] = useState<string>('');
   const [date, setDate] = useState<string>('');
   const [source, setSource] = useState<'ai' | 'demo'>('demo');
@@ -13,13 +17,19 @@ const Summary: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const summaryRef = useRef<HTMLDivElement>(null);
+  const isInitialMount = useRef(true);
 
   useEffect(() => {
-    fetchSummary();
+    fetchSummary(false);
   }, []);
 
-  const fetchSummary = async () => {
-    setLoading(true);
+  useEffect(() => {
+    if (isInitialMount.current) return;
+    fetchSummary(true);
+  }, [refreshKey]);
+
+  const fetchSummary = async (silent = false) => {
+    if (!silent) setLoading(true);
     setError(null);
     try {
       const res = await summaryApi.getSummary();
@@ -27,20 +37,23 @@ const Summary: React.FC = () => {
       setDate(res.data.date);
       setSource(res.data.source);
     } catch (e) {
-      let msg = 'Unable to load summary.';
-      if (axios.isAxiosError(e)) {
-        const status = e.response?.status;
-        if (status === 404) {
-          msg = 'show-fetch-button';
-        } else if (status && status >= 500) {
-          msg = 'Something went wrong. Please try again later.';
-        } else if (e.code === 'ECONNREFUSED' || e.message?.includes('Network Error')) {
-          msg = 'Unable to connect. Please try again.';
+      if (!silent) {
+        let msg = 'Unable to load summary.';
+        if (axios.isAxiosError(e)) {
+          const status = e.response?.status;
+          if (status === 404) {
+            msg = 'show-fetch-button';
+          } else if (status && status >= 500) {
+            msg = 'Something went wrong. Please try again later.';
+          } else if (e.code === 'ECONNREFUSED' || e.message?.includes('Network Error')) {
+            msg = 'Unable to connect. Please try again.';
+          }
         }
+        setError(msg);
       }
-      setError(msg);
     } finally {
       setLoading(false);
+      if (!silent) isInitialMount.current = false;
     }
   };
 
@@ -116,15 +129,11 @@ const Summary: React.FC = () => {
             <span className="text-sm text-slate-500 dark:text-slate-400">
               {date ? formatDate(date) : '—'}
             </span>
-            <span
-              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                source === 'ai'
-                  ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
-                  : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
-              }`}
-            >
-              {source === 'ai' ? 'Expert Summary' : 'Summary'}
-            </span>
+            {source === 'ai' && (
+              <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
+                Expert Summary
+              </span>
+            )}
           </div>
         </div>
         <div className="px-6 py-6">

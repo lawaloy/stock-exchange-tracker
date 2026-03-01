@@ -1,14 +1,17 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom';
 import { ThemeProvider } from './contexts/ThemeContext';
 import Header from './components/layout/Header';
 import Dashboard from './pages/Dashboard';
 import HistoricalTrends from './pages/HistoricalTrends';
 import Summary from './pages/Summary';
+import api from './services/api';
 
 function App() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [dataDate, setDataDate] = useState<string>('');
+  const [backgroundFetching, setBackgroundFetching] = useState(false);
+  const hasAutoFetched = useRef(false);
 
   const handleRefreshComplete = () => {
     setRefreshKey((prev) => prev + 1);
@@ -18,6 +21,40 @@ function App() {
     setRefreshKey((prev) => prev + 1);
   };
 
+  const refreshCompleteRef = useRef(handleRefreshComplete);
+  refreshCompleteRef.current = handleRefreshComplete;
+
+  // On first load: fetch latest trading day data if missing (runs behind the scenes, no button click)
+  useEffect(() => {
+    if (hasAutoFetched.current) return;
+    hasAutoFetched.current = true;
+
+    const fetchIfNeeded = async () => {
+      try {
+        const { data } = await api.get<{ needs_fetch: boolean }>('/api/data-info');
+        if (!data.needs_fetch) return;
+
+        setBackgroundFetching(true);
+        await api.post('/api/refresh');
+        const poll = async (): Promise<void> => {
+          const { data: status } = await api.get<{ is_running: boolean; last_status: string }>('/api/refresh/status');
+          if (status.is_running) {
+            await new Promise((r) => setTimeout(r, 2000));
+            return poll();
+          }
+          setBackgroundFetching(false);
+          if (status.last_status === 'success') {
+            refreshCompleteRef.current();
+          }
+        };
+        await poll();
+      } catch {
+        setBackgroundFetching(false);
+      }
+    };
+    fetchIfNeeded();
+  }, []);
+
   return (
     <ThemeProvider>
     <BrowserRouter>
@@ -26,6 +63,7 @@ function App() {
           dataDate={dataDate}
           onRefreshComplete={handleRefreshComplete}
           onQuickRefresh={handleQuickRefresh}
+          backgroundFetching={backgroundFetching}
         />
         <div className="border-b border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -71,9 +109,9 @@ function App() {
           </div>
         </div>
         <Routes>
-          <Route path="/" element={<Dashboard key={refreshKey} onDataLoaded={setDataDate} />} />
-          <Route path="/historical" element={<HistoricalTrends key={refreshKey} />} />
-          <Route path="/summary" element={<Summary key={refreshKey} />} />
+          <Route path="/" element={<Dashboard refreshKey={refreshKey} onDataLoaded={setDataDate} />} />
+          <Route path="/historical" element={<HistoricalTrends refreshKey={refreshKey} />} />
+          <Route path="/summary" element={<Summary refreshKey={refreshKey} />} />
         </Routes>
       </div>
     </BrowserRouter>
