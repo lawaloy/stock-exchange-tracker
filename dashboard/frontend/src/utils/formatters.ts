@@ -63,30 +63,30 @@ export const formatDate = (dateStr: string): string => {
 export const getRecommendationColor = (recommendation: string): string => {
   switch (recommendation) {
     case 'STRONG BUY':
-      return 'text-strong-buy bg-green-100';
+      return 'text-strong-buy bg-green-100 dark:bg-green-900/30';
     case 'BUY':
-      return 'text-buy bg-green-50';
+      return 'text-buy bg-green-50 dark:bg-green-900/20';
     case 'HOLD':
-      return 'text-hold bg-slate-100';
+      return 'text-hold bg-slate-100 dark:bg-slate-700';
     case 'SELL':
-      return 'text-sell bg-amber-100';
+      return 'text-sell bg-amber-100 dark:bg-amber-900/30';
     case 'STRONG SELL':
-      return 'text-strong-sell bg-red-100';
+      return 'text-strong-sell bg-red-100 dark:bg-red-900/30';
     default:
-      return 'text-slate-600 bg-slate-100';
+      return 'text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-700';
   }
 };
 
 export const getRiskColor = (risk: string): string => {
   switch (risk) {
     case 'Low':
-      return 'text-risk-low bg-green-100';
+      return 'text-risk-low bg-green-100 dark:bg-green-900/30';
     case 'Medium':
-      return 'text-risk-medium bg-amber-100';
+      return 'text-risk-medium bg-amber-100 dark:bg-amber-900/30';
     case 'High':
-      return 'text-risk-high bg-red-100';
+      return 'text-risk-high bg-red-100 dark:bg-red-900/30';
     default:
-      return 'text-slate-600 bg-slate-100';
+      return 'text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-700';
   }
 };
 

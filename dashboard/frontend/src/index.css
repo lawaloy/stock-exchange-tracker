@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Class-based dark mode (toggle via .dark on html) */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-strong-buy: #10B981;
   --color-buy: #34D399;
@@ -16,7 +19,7 @@
 
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-900;
+    @apply bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
       'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
       sans-serif;
@@ -32,15 +35,15 @@
 
 @layer components {
   .card {
-    @apply bg-white border border-slate-200 rounded-lg shadow-sm hover:shadow-md transition-shadow;
+    @apply bg-white border border-slate-200 rounded-lg shadow-sm hover:shadow-md transition-shadow dark:bg-slate-800 dark:border-slate-700;
   }
 
   .btn-primary {
-    @apply px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors;
+    @apply px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors dark:bg-blue-600 dark:hover:bg-blue-700;
   }
 
   .btn-secondary {
-    @apply px-4 py-2 bg-white text-blue-500 border border-blue-500 rounded-md hover:bg-blue-50 transition-colors;
+    @apply px-4 py-2 bg-white text-blue-500 border border-blue-500 rounded-md hover:bg-blue-50 transition-colors dark:bg-slate-800 dark:text-blue-400 dark:border-blue-500 dark:hover:bg-slate-700;
   }
 
   .badge {

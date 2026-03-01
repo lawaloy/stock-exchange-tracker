@@ -11,22 +11,22 @@ interface OpportunityCardProps {
 const OpportunityCard: React.FC<OpportunityCardProps> = ({ opportunity, onClick }) => {
   return (
     <div
-      className="card p-4 cursor-pointer hover:border-blue-300"
+      className="card p-4 cursor-pointer hover:border-blue-300 dark:hover:border-blue-600"
       onClick={onClick}
     >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-3">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex items-center space-x-3 min-w-0">
           <div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 flex-wrap">
               <CompanyLogo symbol={opportunity.symbol} name={getCompanyName(opportunity.symbol, opportunity.name)} size={24} />
-              <span className="font-semibold text-lg">{opportunity.symbol}</span>
-              <span className="text-sm text-slate-600">{getCompanyName(opportunity.symbol, opportunity.name)}</span>
+              <span className="font-semibold text-lg dark:text-slate-100">{opportunity.symbol}</span>
+              <span className="text-sm text-slate-600 dark:text-slate-400 truncate">{getCompanyName(opportunity.symbol, opportunity.name)}</span>
             </div>
-            <div className="flex items-center space-x-2 mt-1 text-sm">
-              <span>{formatPrice(opportunity.currentPrice)}</span>
-              <span className="text-slate-400">→</span>
-              <span className="font-medium">{formatPrice(opportunity.targetPrice)}</span>
-              <span className={opportunity.expectedChange >= 0 ? 'text-green-600' : 'text-red-600'}>
+            <div className="flex items-center space-x-2 mt-1 text-sm flex-wrap">
+              <span className="dark:text-slate-300">{formatPrice(opportunity.currentPrice)}</span>
+              <span className="text-slate-400 dark:text-slate-500">→</span>
+              <span className="font-medium dark:text-slate-200">{formatPrice(opportunity.targetPrice)}</span>
+              <span className={opportunity.expectedChange >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
                 ({formatPercentage(opportunity.expectedChange)})
               </span>
             </div>
@@ -34,12 +34,12 @@ const OpportunityCard: React.FC<OpportunityCardProps> = ({ opportunity, onClick 
         </div>
         <div className="flex flex-col items-end space-y-1">
           <div className="flex items-center space-x-2">
-            <span className="text-sm font-medium">{opportunity.confidence}% conf</span>
+            <span className="text-sm font-medium dark:text-slate-300">{opportunity.confidence}% conf</span>
             <span className={`badge ${getRiskColor(opportunity.risk)}`}>
               {opportunity.risk} risk
             </span>
           </div>
-          <div className="flex items-center space-x-1 text-sm text-slate-600">
+          <div className="flex items-center space-x-1 text-sm text-slate-600 dark:text-slate-400">
             <span>{getTrendIcon(opportunity.trend)}</span>
             <span>{opportunity.trend}</span>
           </div>
