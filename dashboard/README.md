@@ -63,11 +63,22 @@ Navigate to `http://localhost:3000` in your browser.
 - Filterable/sortable stock table
 - Stock detail modal
 
-### Phase 2 (In progress)
+### Historical Trends (implemented)
 
-✅ **Historical Trends** — Multi-day market summary charts, **single-stock** price vs 5-day target, **projection accuracy** (mean error by recommendation, recent scores table). Requires enough history in `data/` after targets mature.
+The **Historical Trends** page is shipped. It includes:
 
-✅ **API Endpoints**
+- Multi-day market summary charts (confidence, expected move, recommendations over time)
+- **Single-stock** view: price vs 5-day target over your selected range
+- **Projection accuracy**: compares older projections’ target prices to the **actual closing price** on or after each projection’s target date; shows rollups by recommendation and a table of recent scores
+
+**Why “projection accuracy” can look empty:**  
+Nothing is wrong with the UI. The accuracy block only has numbers to show when **both** are true: (1) you have saved runs in the `data/` folder across multiple dates (`daily_data_*.csv` and `projections_*.csv`), and (2) enough **calendar time has passed** that each projection’s **target date** is in the past, so there is a real close to compare. Until then you may still see the market charts, while accuracy stays in its empty state. Keep running **Fetch New** on successive days (or add historical files) and it will fill in over time.
+
+### Phase 2 (still in progress)
+
+Other dashboard Phase 2 ideas (watchlist, code splitting, keyboard shortcuts, etc.) are **not** finished yet. See **What’s Next?** below and [docs/PROJECT_STATUS.md](../docs/PROJECT_STATUS.md).
+
+### API Endpoints
 
 - `/api/market/overview` - Market statistics
 - `/api/market/movers` - Top gainers/losers
@@ -79,7 +90,7 @@ Navigate to `http://localhost:3000` in your browser.
 - `/api/history/summary` - Aggregated historical summary over time
 - `/api/history/accuracy` - Projection vs actual accuracy (see [docs/PROJECT_STATUS.md](../docs/PROJECT_STATUS.md))
 
-✅ **Technologies**
+### Technologies
 
 - FastAPI backend with pandas data loading
 - React 18 + TypeScript frontend
