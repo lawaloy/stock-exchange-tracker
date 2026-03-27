@@ -46,34 +46,42 @@ See [Dashboard README](dashboard/README.md) for full setup instructions.
 - Python 3.12 or higher ([Download here](https://www.python.org/downloads/))
 - A free Finnhub API key ([Sign up here](https://finnhub.io/register) - takes 2 minutes)
 
-### Step 1: Get the Code
+### Step 1: Install
+
+Create a virtual environment (recommended), then activate it:
 
 ```bash
-git clone https://github.com/lawaloy/stock-exchange-tracker.git
-cd stock-exchange-tracker
-```
-
-### Step 2: Install
-
-```bash
-# Create a virtual environment
 python -m venv .venv
-
-# Activate it
 # Windows PowerShell:
 .venv\Scripts\Activate.ps1
 # Windows CMD:
 .venv\Scripts\activate
 # Mac/Linux:
 source .venv/bin/activate
-
-# Install the tracker
-pip install -e .
 ```
 
-### Step 3: Add Your API Key
+**Install the package—pick one:**
 
-Create a file named `.env` in the project folder:
+- **From PyPI** (simplest if you only need the CLI):
+
+  ```bash
+  pip install stock-exchange-tracker
+  ```
+
+  - Package page: [pypi.org/project/stock-exchange-tracker](https://pypi.org/project/stock-exchange-tracker/)
+  - Optional OpenAI-powered summaries: `pip install 'stock-exchange-tracker[ai]'`
+
+- **From source** (clone the repo for development, or to run the [web dashboard](dashboard/README.md) from this tree):
+
+  ```bash
+  git clone https://github.com/lawaloy/stock-exchange-tracker.git
+  cd stock-exchange-tracker
+  pip install -e .
+  ```
+
+### Step 2: Add Your API Key
+
+Create a file named `.env` in the folder where you will run the tool (project root if you cloned, or any working directory if you installed from PyPI):
 
 ```text
 FINNHUB_API_KEY=your-api-key-here
@@ -81,11 +89,21 @@ FINNHUB_API_KEY=your-api-key-here
 
 *(Get your free key from [finnhub.io/register](https://finnhub.io/register))*
 
-### Step 4: Run It
+### Step 3: Run It
+
+The install adds the **`stock-tracker`** command:
+
+```bash
+stock-tracker
+```
+
+If you cloned the repository, you can also run:
 
 ```bash
 python main.py
 ```
+
+from the project root (same CLI under the hood).
 
 That's it! The tool will:
 

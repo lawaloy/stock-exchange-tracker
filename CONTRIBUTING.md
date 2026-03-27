@@ -12,6 +12,8 @@ Thank you for your interest in contributing! This document provides guidelines f
    cd stock-exchange-tracker
    ```
 
+   **End users** who only need the CLI can install from PyPI instead: `pip install stock-exchange-tracker` — see [PyPI](https://pypi.org/project/stock-exchange-tracker/) and the main README.
+
 3. **Create a virtual environment**:
 
    ```bash
