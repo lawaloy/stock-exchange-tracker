@@ -120,3 +120,50 @@ class TestDataLoader:
 
         result = loader.load_daily_data()
         assert result.iloc[0]["symbol"] == "NEW"
+
+    def test_projection_target_date_from_row(self, loader):
+        """Uses projection_date column when present."""
+        row = {"projection_date": "2026-02-01"}
+        assert loader._projection_target_date(row, "2026-01-01") == "2026-02-01"
+
+    def test_projection_target_date_fallback_run_plus_five(self, loader):
+        """Falls back to run date + 5 days when projection_date missing."""
+        assert loader._projection_target_date({}, "2026-01-01") == "2026-01-06"
+
+    def test_compute_projection_accuracy_matches_actual(self, loader, temp_data_dir):
+        """Compares target_mid to close on target date."""
+        df_day = pd.DataFrame(
+            {
+                "symbol": ["AAPL"],
+                "close": [100.0],
+                "change_percent": [0.0],
+            }
+        )
+        df_day.to_csv(temp_data_dir / "daily_data_2026-01-10.csv", index=False)
+        df_target = pd.DataFrame(
+            {
+                "symbol": ["AAPL"],
+                "close": [105.0],
+                "change_percent": [1.0],
+            }
+        )
+        df_target.to_csv(temp_data_dir / "daily_data_2026-01-15.csv", index=False)
+
+        proj = pd.DataFrame(
+            {
+                "symbol": ["AAPL"],
+                "target_mid": [100.0],
+                "recommendation": ["HOLD"],
+                "projection_date": ["2026-01-15"],
+                "confidence": [50],
+                "expected_change_percent": [0.0],
+            }
+        )
+        proj.to_csv(temp_data_dir / "projections_2026-01-10.csv", index=False)
+
+        out = loader.compute_projection_accuracy(days=90)
+        assert out["summary"]["sampleCount"] == 1
+        assert out["summary"]["meanAbsErrorPct"] == 5.0
+        assert out["samples"][0]["absErrorPct"] == 5.0
+        assert out["samples"][0]["symbol"] == "AAPL"
+        assert "HOLD" in out["summary"]["byRecommendation"]

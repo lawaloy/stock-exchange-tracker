@@ -8,6 +8,7 @@ import type {
   HistoricalData,
   HistoricalSummaryResponse,
   MarketSummaryResponse,
+  ProjectionAccuracyResponse,
 } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? '';
@@ -54,6 +55,8 @@ export const historyApi = {
   getDates: () => api.get<{ dates: string[] }>('/api/history/dates'),
   getSummary: (days: number = 30) =>
     api.get<HistoricalSummaryResponse>('/api/history/summary', { params: { days } }),
+  getAccuracy: (days: number = 90) =>
+    api.get<ProjectionAccuracyResponse>('/api/history/accuracy', { params: { days } }),
   getSymbols: () =>
     api.get<{ symbols: string[]; names: Record<string, string>; date: string }>('/api/history/symbols'),
 };

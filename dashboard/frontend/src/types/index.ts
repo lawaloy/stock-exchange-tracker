@@ -137,6 +137,29 @@ export interface HistoricalSummaryResponse {
   names?: Record<string, string>;
 }
 
+export interface AccuracyByRecommendation {
+  count: number;
+  meanAbsErrorPct: number | null;
+}
+
+export interface ProjectionAccuracyResponse {
+  summary: {
+    sampleCount: number;
+    meanAbsErrorPct: number | null;
+    byRecommendation: Record<string, AccuracyByRecommendation>;
+  };
+  samples: Array<{
+    symbol: string;
+    runDate: string;
+    targetDate: string;
+    actualDate: string;
+    predicted: number;
+    actual: number;
+    absErrorPct: number;
+    recommendation: string;
+  }>;
+}
+
 export interface MarketSummaryResponse {
   date: string;
   summary: string;
