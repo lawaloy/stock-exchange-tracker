@@ -63,6 +63,10 @@ Navigate to `http://localhost:3000` in your browser.
 - Filterable/sortable stock table
 - Stock detail modal
 
+### Phase 2 (In progress)
+
+✅ **Historical Trends** — Multi-day market summary charts, **single-stock** price vs 5-day target, **projection accuracy** (mean error by recommendation, recent scores table). Requires enough history in `data/` after targets mature.
+
 ✅ **API Endpoints**
 
 - `/api/market/overview` - Market statistics
@@ -72,6 +76,8 @@ Navigate to `http://localhost:3000` in your browser.
 - `/api/projections/opportunities` - Buy/Sell opportunities
 - `/api/stocks/{symbol}` - Stock details
 - `/api/stocks/{symbol}/historical` - Historical data
+- `/api/history/summary` - Aggregated historical summary over time
+- `/api/history/accuracy` - Projection vs actual accuracy (see [docs/PROJECT_STATUS.md](../docs/PROJECT_STATUS.md))
 
 ✅ **Technologies**
 
@@ -148,6 +154,10 @@ npm run build
 - `DATA_DIR` - Path to data directory (defaults to `../../data`)
 - `CORS_ORIGINS` - Allowed CORS origins (defaults to localhost:3000)
 
+**Alerts (Python tracker / `config/alerts.json`):**
+
+- `ALERT_WEBHOOK_URL` - Default webhook URL if an alert uses `"notifications": ["webhook"]` without per-rule `webhook_url` (see [docs/PROJECT_STATUS.md](../docs/PROJECT_STATUS.md))
+
 **Frontend:**
 
 - `VITE_API_URL` - Backend API URL (defaults to `http://localhost:8000`)
@@ -180,12 +190,14 @@ npm run build
 
 ## What's Next?
 
-**Next Priority:**
+**Status:** See [docs/PROJECT_STATUS.md](../docs/PROJECT_STATUS.md) for repo-wide roadmap, skipped items, and how we plan to close gaps.
 
-1. **Historical trends page** – Multi-day data, projection accuracy tracking, trend charts (partially implemented)
-2. **Performance** – Code splitting, lazy loading
-3. **Watchlist** – Save favorite stocks
-4. **Keyboard shortcuts** – Quick navigation
+**Dashboard-focused next steps:**
+
+1. **Performance** — Code splitting, lazy route loading (bundle size)
+2. **Watchlist** — Save favorite symbols (local persistence first)
+3. **Keyboard shortcuts** — Quick navigation
+4. **Alerts (future)** — Optional UI to view/test rules (backend alerts today live in `config/alerts.json` + **webhook** / log)
 
 See [DASHBOARD_DESIGN.md](../docs/DASHBOARD_DESIGN.md) for full Phase 2 design.
 

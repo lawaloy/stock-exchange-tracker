@@ -448,11 +448,14 @@ A: Yes. All data stays on your machine. API keys never leave your environment.
 
 We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
-**Next Priority (by impact):**
+**Project status (what shipped, what’s next, gaps):** [docs/PROJECT_STATUS.md](docs/PROJECT_STATUS.md)
 
-1. **Alert & notification system** – Price/screening/recommendation alerts, SNS/email/webhook (design ready; see [ALERTING_DESIGN.md](docs/ALERTING_DESIGN.md))
-2. **Historical trends** – Multi-day data aggregation, projection accuracy tracking, trend charts
-3. Additional exchanges, screening filters (RSI/MACD), enhanced AI summaries
+**Next priorities (summary):**
+
+1. **Alerts** — Extend beyond log + webhook: **email (SMTP)**, optional Slack-formatted payloads, **CLI** commands; full vision in [ALERTING_DESIGN.md](docs/ALERTING_DESIGN.md).
+2. **Projection accuracy** — Deeper metrics (e.g. by confidence), business-calendar targets as needed.
+3. **Dashboard** — Watchlist, code splitting, shortcuts (see [dashboard/README.md](dashboard/README.md)).
+4. **Broader product** — More exchanges/filters, richer AI summaries, sector/portfolio ideas (see CONTRIBUTING).
 
 **Quick Start:**
 

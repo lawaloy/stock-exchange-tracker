@@ -183,193 +183,72 @@ def test_function_returns_expected_value_when_given_valid_input(self):
 
 ## Areas for Contribution
 
+**Roadmap detail:** See [docs/PROJECT_STATUS.md](docs/PROJECT_STATUS.md) for current status, what shipped, what’s next, and deferred items.
+
 ### Current Gaps & Opportunities
 
-The tracker now includes a dashboard, but still lacks:
-
-- ❌ **Alerting System** - Designed but not implemented
-- ❌ **Historical Trends** - Limited multi-day trend analysis
-- ❌ **Real-Time Monitoring** - Must re-run to refresh data
-- ❌ **Advanced Filtering** - Limited sector and technical filters
+- **Alerts:** Engine + `config/alerts.json` + **log** + **webhook** are in place; **email/SNS**, rich **Slack payloads**, **CLI** subcommands, and **dashboard** management UI are not.
+- **Historical / accuracy:** Multi-day trends and **projection accuracy** (API + Historical Trends UI) are in place; deeper **metrics by confidence**, **risk-adjusted** views, and **business-calendar** target dates are still open.
+- **Real-time:** Data is batch/daily; refresh is explicit (not streaming).
+- **Screening:** Advanced technical filters (RSI/MACD, etc.) remain future work.
 
 ### Completed Milestones
 
-- ✅ **Web Dashboard (v0.3.0)** - Visual UI for market data, projections, and insights
+- ✅ **Web Dashboard (v0.3+)** — Market overview, projections, Historical Trends, **projection accuracy** section.
+- ✅ **Alerts (partial)** — `AlertEngine`, price/screening rules, cooldowns, **webhook** + **log** notifiers.
 
-### Priority Features (Ranked by Impact)
+### Priority Features (ranked by impact)
 
-#### 🥇 Priority #1: Alert & Notification System (Next Milestone)
+#### Priority #1: Alert & notification system (extend what exists)
 
-**Status:** Design complete, ready for implementation
+**Status:** Partially implemented — see [docs/PROJECT_STATUS.md](docs/PROJECT_STATUS.md).
 
-**Impact:** Enables timely buy/sell decisions (CRITICAL FOR TRADING)
+**Done / in repo:**
 
-**Effort:** 2-3 weeks
+- [x] Alert engine (price threshold, screening match), storage, cooldowns
+- [x] JSON rules in `config/alerts.json`
+- [x] Log notifier
+- [x] **Webhook** notifier (`webhook_url` or `ALERT_WEBHOOK_URL`)
 
-**What to Build:**
+**Still to build:**
 
-- [ ] **Alert Engine**
-  - Price alerts (threshold-based: "alert me when AAPL < $150")
-  - Screening alerts (pattern-based: "alert when high volume + big gain")
-  - Recommendation alerts ("alert when stock becomes STRONG BUY")
-  - Technical indicator alerts (RSI, MACD, moving average crossovers)
-  - Multi-condition alerts with AND/OR logic
-
-- [ ] **Notification Channels**
-  - AWS SNS (SMS, email)
-  - Azure Service Bus / Event Grid
-  - Google Cloud Pub/Sub
-  - Email (SMTP - cloud agnostic)
-  - Webhook (Slack, Discord, custom endpoints)
-  - Push notifications (optional)
-
-- [ ] **Alert Management**
-  - JSON/YAML configuration for alert rules
-  - Alert history and audit log
-  - Cooldown periods to prevent spam
-  - Enable/disable individual alerts
-  - Test/dry-run mode
-
-- [ ] **CLI Integration**
-  - `stock-tracker alerts list`
-  - `stock-tracker alerts add --name "AAPL Drop" --condition "price < 150"`
-  - `stock-tracker alerts test alert_1`
-
-**Documentation:** See [Alerting Design](docs/ALERTING_DESIGN.md) for complete specifications
+- [ ] Email (SMTP) and optional cloud notifiers (SNS, etc.)
+- [ ] Optional Slack/Discord-specific payload shaping
+- [ ] CLI: `alerts list`, `alerts test`, …
+- [ ] Technical / multi-condition rules per [Alerting Design](docs/ALERTING_DESIGN.md)
 
 ---
 
-#### 🥈 Priority #2: Historical Trends Visualization
+#### Priority #2: Historical trends & accuracy
 
-**Status:** Needs design & implementation
+**Status:** Partially implemented.
 
-**Impact:** Enables pattern recognition and projection accuracy validation
+**Done / in repo:**
 
-**Effort:** 1 week
+- [x] Multi-day aggregation, summary API, charts (confidence, recommendations, expected move)
+- [x] Per-symbol historical chart with projection overlay
+- [x] **Projection accuracy** — `GET /api/history/accuracy`, UI on Historical Trends
 
-**What to Build:**
+**Still to build:**
 
-- [ ] **Data aggregation across multiple days**
-  - Load and merge historical CSV/JSON files
-  - Calculate trends and consistency metrics
-  - Track recommendation changes over time
-
-- [ ] **Trend visualization**
-  - Time-series charts for stock prices
-  - Recommendation history timeline
-  - Confidence score trends
-  - Volume patterns
-
-- [ ] **Projection accuracy tracking**
-  - Compare projected vs actual prices
-  - Calculate accuracy percentages per recommendation type
-  - Identify best/worst performing projections
-
-- [ ] **Performance metrics**
-  - Stocks with consistent STRONG BUY ratings
-  - Accuracy by confidence level
-  - Risk-adjusted returns
-
-**Integration:** Can be built as part of Dashboard (Phase 2) or standalone analysis module
+- [ ] Accuracy / trends **by confidence** band and richer performance metrics
+- [ ] Recommendation change timeline, volume patterns (as needed)
+- [ ] Optional business-day target alignment for scoring
 
 ---
 
-#### 🥉 Priority #3: Web Dashboard Enhancements
+#### Priority #3: Web dashboard enhancements
 
-**Status:** In progress
+**Status:** Ongoing.
 
-**Impact:** Improves usability and depth of analysis
+**Completed (examples):**
 
-**Effort:** Ongoing
+- [x] Dark mode, export, mobile-oriented layout (see dashboard README)
+- [x] Projection accuracy views (Historical Trends)
 
-**Completed:**
+**Still to build:**
 
-- [x] Dark mode toggle
-- [x] Export (CSV/PNG/PDF)
-- [x] Mobile optimization
-
-**What to Build:**
-
-- [ ] Projection accuracy views
-- [ ] Additional KPI cards and filtering
- 
----
-
----
-
-#### 🥈 Priority #2: Historical Trends Visualization
-
-**Status:** Needs design & implementation
-
-**Impact:** Enables pattern recognition and projection accuracy validation
-
-**Effort:** 1 week
-
-**What to Build:**
-
-- [ ] **Data aggregation across multiple days**
-  - Load and merge historical CSV/JSON files
-  - Calculate trends and consistency metrics
-  - Track recommendation changes over time
-
-- [ ] **Trend visualization**
-  - Time-series charts for stock prices
-  - Recommendation history timeline
-  - Confidence score trends
-  - Volume patterns
-
-- [ ] **Projection accuracy tracking**
-  - Compare projected vs actual prices
-  - Calculate accuracy percentages per recommendation type
-  - Identify best/worst performing projections
-
-- [ ] **Performance metrics**
-  - Stocks with consistent STRONG BUY ratings
-  - Accuracy by confidence level
-  - Risk-adjusted returns
-
-**Integration:** Can be built as part of Dashboard (Phase 2) or standalone analysis module
-
----
-
-#### 🥉 Priority #3: Alert & Notification System
-
-**Status:** Design complete, ready for implementation
-
-**Impact:** Enables timely buy/sell decisions (CRITICAL FOR TRADING)
-
-**Effort:** 2-3 weeks
-
-**What to Build:**
-
-- [ ] **Alert Engine**
-  - Price alerts (threshold-based: "alert me when AAPL < $150")
-  - Screening alerts (pattern-based: "alert when high volume + big gain")
-  - Recommendation alerts ("alert when stock becomes STRONG BUY")
-  - Technical indicator alerts (RSI, MACD, moving average crossovers)
-  - Multi-condition alerts with AND/OR logic
-
-- [ ] **Notification Channels**
-  - AWS SNS (SMS, email)
-  - Azure Service Bus / Event Grid
-  - Google Cloud Pub/Sub
-  - Email (SMTP - cloud agnostic)
-  - Webhook (Slack, Discord, custom endpoints)
-  - Push notifications (optional)
-
-- [ ] **Alert Management**
-  - JSON/YAML configuration for alert rules
-  - Alert history and audit log
-  - Cooldown periods to prevent spam
-  - Enable/disable individual alerts
-  - Test/dry-run mode
-
-- [ ] **CLI Integration**
-  - `stock-tracker alerts list`
-  - `stock-tracker alerts add --name "AAPL Drop" --condition "price < 150"`
-  - `stock-tracker alerts test alert_1`
-
-**Documentation:** See [Alerting Design](docs/ALERTING_DESIGN.md) for complete specifications
+- [ ] Code splitting / lazy routes, watchlist, shortcuts — see [dashboard/README.md](dashboard/README.md)
 
 ---
 
