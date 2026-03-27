@@ -61,7 +61,7 @@ From `dashboard/frontend`:
 npm run build
 ```
 
-Output goes to **`dashboard/backend/static/`** and is included in the Python package for **`stock-tracker-dashboard`**.
+Output goes to **`dashboard/backend/static/`** (not committed; release wheels are built in CI with `npm run build` before packaging). For a local wheel/sdist, run this step before **`python -m build`**.
 
 ### 4. Open the app (dev)
 

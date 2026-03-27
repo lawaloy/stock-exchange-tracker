@@ -33,6 +33,9 @@ wheels/
 node_modules/
 **/node_modules/
 npm-debug.log*
+
+# Dashboard SPA build output (run: cd dashboard/frontend && npm run build)
+dashboard/backend/static/
 yarn-debug.log*
 yarn-error.log*
 
