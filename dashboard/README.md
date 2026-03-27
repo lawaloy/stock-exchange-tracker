@@ -162,7 +162,7 @@ npm run build
 
 **Backend:**
 
-- `DATA_DIR` - Path to data directory (defaults to `../../data`)
+- `DATA_DIR` - Path to data directory (defaults to `../../data`). In production, set to a **persistent** absolute path (see [docs/DEPLOYMENT.md](../docs/DEPLOYMENT.md)).
 - `CORS_ORIGINS` - Allowed CORS origins (defaults to localhost:3000)
 
 **Alerts (Python tracker / `config/alerts.json`):**

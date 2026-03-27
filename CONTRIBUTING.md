@@ -183,7 +183,7 @@ def test_function_returns_expected_value_when_given_valid_input(self):
 
 ## Areas for Contribution
 
-**Roadmap detail:** See [docs/PROJECT_STATUS.md](docs/PROJECT_STATUS.md) for current status, what shipped, what’s next, and deferred items.
+**Roadmap detail:** See [docs/PROJECT_STATUS.md](docs/PROJECT_STATUS.md) for current status, what shipped, what’s next, and deferred items. **Hosting:** [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 ### Current Gaps & Opportunities
 

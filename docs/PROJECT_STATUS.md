@@ -1,6 +1,6 @@
 # Project status & roadmap
 
-**Last updated:** 2026-03-26 (docs sync with `main` after webhook + projection-accuracy merges)
+**Last updated:** 2026-03-26 — added [DEPLOYMENT.md](DEPLOYMENT.md) (hosting, `DATA_DIR`, future trading notes)
 
 This file is the **single place** for “where we are,” “what’s next,” and **gaps** (skipped or deferred work). Other READMEs link here for details.
 
@@ -15,6 +15,7 @@ This file is the **single place** for “where we are,” “what’s next,” a
 | Alerts | **Partial** | `AlertEngine`, `config/alerts.json`, **log** + **HTTP webhook** notifiers; no email/SNS/CLI UI yet |
 | Historical / accuracy | **Partial** | Multi-day charts + **`GET /api/history/accuracy`** + UI on Historical Trends; limited “portfolio-level” metrics |
 | Tests | **Good coverage** core + dashboard + alerts webhook; gaps in some `services/` modules |
+| Hosting / deploy | **Documented** | See [DEPLOYMENT.md](DEPLOYMENT.md) — `DATA_DIR`, env vars, persistence; **no** automated execution in repo yet |
 
 ---
 
@@ -55,6 +56,11 @@ This file is the **single place** for “where we are,” “what’s next,” a
    - `src/services/data_fetcher.py`, `stock_screener.py`, `index_fetcher.py` — add targeted tests.  
    - **Integration** test: tracker run with temp `data/` (optional, high value).
 
+6. **Future: hosted execution (optional product direction)**  
+   - Not implemented: **broker API** integration, **order** state in a **DB**, risk limits, paper-then-live.  
+   - **Today:** deploy tracker + dashboard with persistent `DATA_DIR` per [DEPLOYMENT.md](DEPLOYMENT.md).  
+   - **Before real money:** Postgres (or similar) for orders/audit; never store trading keys in git.
+
 ---
 
 ## Skipped / deferred / gaps — and how we address them
@@ -68,6 +74,7 @@ This file is the **single place** for “where we are,” “what’s next,” a
 | **Accuracy “confidence” metrics** | v1 focused on absolute % error by recommendation | Extend `compute_projection_accuracy` to join confidence from projection rows and aggregate |
 | **CONTRIBUTING duplicate sections** | Doc drift | Removed in same docs PR; this file prevents future split-brain |
 | **Real-time data** | Architecture is batch/daily | Documented as non-goal; optional WebSocket phase if needed |
+| **Automated trading** | Out of scope for current codebase | New module + broker API + DB + compliance review; see [DEPLOYMENT.md](DEPLOYMENT.md) |
 
 ---
 
@@ -81,6 +88,7 @@ This file is the **single place** for “where we are,” “what’s next,” a
 
 ## Related docs
 
+- [Deployment & persistence](DEPLOYMENT.md)  
 - [Alerting design (full vision)](ALERTING_DESIGN.md)  
 - [Dashboard design](DASHBOARD_DESIGN.md)  
 - [Contributing](../CONTRIBUTING.md)  

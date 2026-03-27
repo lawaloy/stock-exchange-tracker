@@ -33,6 +33,8 @@ Visit `http://localhost:3000` to see it in action!
 
 See [Dashboard README](dashboard/README.md) for full setup instructions.
 
+**Hosting:** Deploying the API and frontend, setting **`DATA_DIR`** on persistent disk, and keeping secrets out of git — see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+
 ---
 
 ## Quick Start (Beginners Welcome!)
