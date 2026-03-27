@@ -1,5 +1,5 @@
 """
-Stock Exchange Tracker - Main Entry Point
+MarketHelm — main entry point (convenience wrapper for the CLI).
 
 This is a convenience wrapper for the CLI interface.
 - CLI presentation: src/cli/commands.py

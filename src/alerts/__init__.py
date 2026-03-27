@@ -1,5 +1,5 @@
 """
-Alerting module for Stock Exchange Tracker.
+Alerting module for MarketHelm.
 """
 
 from .alert_engine import AlertEngine

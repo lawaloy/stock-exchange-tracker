@@ -1,5 +1,5 @@
 """
-Stock Exchange Tracker - Data Storage Module
+MarketHelm - Data Storage Module
 
 Handles saving and loading stock market data to/from CSV files.
 """
@@ -344,7 +344,7 @@ class DataStorage:
         md.append("")
         md.append("---")
         md.append("")
-        md.append(f"*Generated on {generated_date} by Stock Exchange Tracker*")
+        md.append(f"*Generated on {generated_date} by MarketHelm*")
         
         # Write to file with trailing newline
         with open(output_path, 'w', encoding='utf-8') as f:

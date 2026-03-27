@@ -105,7 +105,7 @@ jobs:
       id-token: write # Required for trusted publishing
     environment:
       name: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'pypi' }}
-      url: ${{ github.event_name == 'workflow_dispatch' && inputs.environment == 'testpypi' && 'https://test.pypi.org/project/stock-exchange-tracker/' || 'https://pypi.org/project/stock-exchange-tracker/' }}
+      url: ${{ github.event_name == 'workflow_dispatch' && inputs.environment == 'testpypi' && 'https://test.pypi.org/project/market-helm/' || 'https://pypi.org/project/market-helm/' }}
 
     steps:
       - name: Download artifacts

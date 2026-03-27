@@ -105,7 +105,7 @@ class TestDashboardHealth:
         if "application/json" in ct:
             data = r.json()
             assert data["status"] == "healthy"
-            assert "Stock Exchange Tracker" in data["service"]
+            assert "MarketHelm" in data["service"]
         else:
             assert "text/html" in ct
 

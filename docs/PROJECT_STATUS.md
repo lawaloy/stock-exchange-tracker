@@ -55,7 +55,7 @@ This file is the **single place** for “where we are,” “what’s next,” a
    - **Document** `config/alerts.example.json` and env vars in dashboard README.
 
 2. **Alerts — operational UX**  
-   - CLI: `stock-tracker alerts list|test` (even read-only first).  
+   - CLI: `market-helm alerts list|test` (even read-only first).  
    - Optional: minimal dashboard page to view/trigger test (read-only config).
 
 3. **Projection accuracy — deeper analytics**  

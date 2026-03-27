@@ -28,7 +28,7 @@ If you omit persistence, containers that restart **lose** history unless you res
 **Example (Linux):**
 
 ```bash
-export DATA_DIR=/var/lib/stock-exchange-tracker/data
+export DATA_DIR=/var/lib/market-helm/data
 ```
 
 Point your process manager (systemd, Docker, etc.) at that environment.

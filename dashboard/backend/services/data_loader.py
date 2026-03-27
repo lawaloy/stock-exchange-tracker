@@ -11,13 +11,15 @@ from functools import lru_cache
 
 
 def _default_data_dir() -> Path:
-    """Resolve data directory: DATA_DIR env, repo data/ when developing, else ~/.stock-exchange-tracker/data."""
+    """Resolve data directory: DATA_DIR env, repo data/ when developing, else user data dir."""
+    from dashboard.backend.user_paths import user_config_dir
+
     env_dir = os.getenv("DATA_DIR")
     if env_dir:
         return Path(env_dir).resolve()
     here = Path(__file__).resolve()
     if "site-packages" in here.parts:
-        return Path.home() / ".stock-exchange-tracker" / "data"
+        return user_config_dir() / "data"
     # Project root is 4 levels up (dashboard/backend/services/data_loader.py)
     project_root = here.parent.parent.parent.parent
     return project_root / "data"

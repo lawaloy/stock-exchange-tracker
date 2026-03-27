@@ -1,4 +1,4 @@
-"""CLI interface for stock tracker."""
+"""CLI interface for MarketHelm."""
 
 from .commands import main, display_results
 

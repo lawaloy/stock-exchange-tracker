@@ -1,4 +1,4 @@
-# Contributing to Stock Exchange Tracker
+# Contributing to MarketHelm
 
 Thank you for your interest in contributing! This document provides guidelines for contributing to the project.
 
@@ -8,11 +8,11 @@ Thank you for your interest in contributing! This document provides guidelines f
 2. **Clone your fork** locally:
 
    ```bash
-   git clone https://github.com/YOUR_USERNAME/stock-exchange-tracker.git
-   cd stock-exchange-tracker
+   git clone https://github.com/YOUR_USERNAME/market-helm.git
+   cd market-helm
    ```
 
-   **End users** who only need the CLI can install from PyPI instead: `pip install stock-exchange-tracker` — see [PyPI](https://pypi.org/project/stock-exchange-tracker/) and the main README.
+   **End users** can install from PyPI: `pip install market-helm` — see [PyPI](https://pypi.org/project/market-helm/) and the main README.
 
 3. **Create a virtual environment**:
 

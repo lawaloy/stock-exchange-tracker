@@ -1,16 +1,16 @@
-# Stock Exchange Tracker Dashboard
+# MarketHelm — web dashboard
 
 Modern, interactive web dashboard for visualizing stock market data, projections, and recommendations.
 
 ## Install from PyPI (recommended)
 
-After **`pip install stock-exchange-tracker`** (from the [main README](../README.md)), run:
+After **`pip install market-helm`** (from the [main README](../README.md)), run:
 
 ```bash
-stock-tracker-dashboard
+market-helm-web
 ```
 
-Then open **http://localhost:8000** — the API and the built React UI are served together. Data files are read from **`DATA_DIR`** if set, otherwise the repo’s **`data/`** folder when developing from a clone, or **`~/.stock-exchange-tracker/data`** when the package is installed from a wheel.
+Then open **http://localhost:8000** — the API and the built React UI are served together. Data files are read from **`DATA_DIR`** if set, otherwise the repo’s **`data/`** folder when developing from a clone, or **`~/.market-helm/data`** when the package is installed from a wheel. On first run, if **`~/.market-helm`** does not exist but **`~/.market-desk`** does, it is **renamed** to **`~/.market-helm`** automatically.
 
 Optional: **`HOST`**, **`PORT`**, **`CORS_ORIGINS`**, **`UVICORN_RELOAD`** — see [Environment Variables](#environment-variables) below.
 
@@ -196,7 +196,7 @@ npm run build
 
 #### "No data files found"
 
-- Make sure you've run the stock tracker at least once to generate data files
+- Make sure you've run **`market-helm`** (or `python main.py`) at least once to generate data files
 - Check that the `data/` directory exists in the project root
 
 #### CORS errors

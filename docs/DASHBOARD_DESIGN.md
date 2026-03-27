@@ -83,7 +83,7 @@ User views sentiment distribution
 ### Project Structure
 
 ```text
-stock-exchange-tracker/
+market-helm/
 ├── dashboard/                      # NEW: Web Dashboard
 │   ├── backend/                    # FastAPI Backend
 │   │   ├── main.py                 # FastAPI app entry point
@@ -374,7 +374,7 @@ GET /api/market/movers?type=losers&limit=10
 
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
-│ 📊 Stock Exchange Tracker    [Dashboard] [Projections] [⚙️]    │
+│ 📊 MarketHelm    [Dashboard] [Projections] [⚙️]    │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                  │
 │ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐           │
@@ -875,7 +875,7 @@ netlify deploy --prod
 
 ```bash
 # Backend
-DATA_DIR=/path/to/stock-exchange-tracker/data
+DATA_DIR=/path/to/market-helm/data
 CORS_ORIGINS=https://your-frontend.vercel.app
 
 # Frontend

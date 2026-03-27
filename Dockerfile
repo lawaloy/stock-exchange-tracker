@@ -26,6 +26,6 @@ RUN addgroup --system app && adduser --system --ingroup app app \
 USER app
 
 # Optional: simple health check (fails fast if entrypoint missing)
-HEALTHCHECK --interval=30s --timeout=5s --retries=3 CMD stock-tracker --help >/dev/null 2>&1 || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 CMD market-helm --help >/dev/null 2>&1 || exit 1
 
-ENTRYPOINT ["stock-tracker"]
+ENTRYPOINT ["market-helm"]

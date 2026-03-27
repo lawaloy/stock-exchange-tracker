@@ -1,5 +1,5 @@
 """
-Stock Exchange Tracker - Configuration Module
+MarketHelm - Configuration Module
 
 Handles loading of configuration for indices and exchanges.
 """

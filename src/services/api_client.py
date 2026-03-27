@@ -1,5 +1,5 @@
 """
-Stock Exchange Tracker - API Client Module
+MarketHelm - API Client Module
 
 Professional API client for fetching stock data using official APIs.
 Uses Finnhub API (official, reliable, free tier: 60 calls/minute).

@@ -1,1 +1,1 @@
-"""Stock Exchange Tracker web dashboard (FastAPI + optional bundled SPA)."""
+"""MarketHelm web dashboard (FastAPI + optional bundled SPA)."""

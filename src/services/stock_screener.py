@@ -1,5 +1,5 @@
 """
-Stock Exchange Tracker - Stock Screener Module
+MarketHelm - Stock Screener Module
 
 Screens stocks from major indices using flexible scoring system.
 Designed for trading automation - finds liquid, active stocks worth tracking.

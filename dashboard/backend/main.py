@@ -1,5 +1,5 @@
 """
-FastAPI Backend for Stock Exchange Tracker Dashboard
+FastAPI backend for the MarketHelm dashboard.
 """
 import logging
 
@@ -32,9 +32,9 @@ try:
         if (_p / "main.py").is_file() and (_p / ".env").is_file():
             load_dotenv(_p / ".env")
             break
-    _user_cfg = Path.home() / ".stock-exchange-tracker" / ".env"
-    if _user_cfg.is_file():
-        load_dotenv(_user_cfg)
+    _user_env = Path.home() / ".market-helm" / ".env"
+    if _user_env.is_file():
+        load_dotenv(_user_env, override=True)
 except ImportError:
     pass
 
@@ -42,9 +42,9 @@ from dashboard.backend.api import market, projections, stocks, refresh, history
 from dashboard.backend.api.market import get_market_summary
 
 app = FastAPI(
-    title="Stock Exchange Tracker API",
+    title="MarketHelm API",
     description="API for stock market data, projections, and recommendations",
-    version="0.3.0"
+    version="0.5.0"
 )
 
 # CORS configuration for local development
@@ -115,8 +115,8 @@ else:
         """Health check when SPA bundle is not present (e.g. dev without frontend build)."""
         return {
             "status": "healthy",
-            "service": "Stock Exchange Tracker API",
-            "version": "0.3.0",
+            "service": "MarketHelm API",
+            "version": "0.5.0",
             "spa": False,
         }
 

@@ -1,5 +1,5 @@
 """
-Stock Exchange Tracker - Data Analyzer Module
+MarketHelm - Data Analyzer Module
 
 Analyzes stock market data and generates summaries.
 """

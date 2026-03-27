@@ -1,7 +1,7 @@
 #!/bin/bash
 # Unix/Mac script to start both backend and frontend
 
-echo "Starting Stock Exchange Tracker Dashboard..."
+echo "Starting MarketHelm dashboard..."
 echo ""
 
 # Start backend in background

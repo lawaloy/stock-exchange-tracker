@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: stock-tracker
+  name: market-helm
 spec:
   # Runs daily at 08:00 UTC
   schedule: "0 8 * * *"
@@ -14,15 +14,15 @@ spec:
         spec:
           restartPolicy: OnFailure
           containers:
-            - name: stock-tracker
-              image: myregistry/stock-tracker:latest
+            - name: market-helm
+              image: myregistry/market-helm:latest
               imagePullPolicy: IfNotPresent
-              # Ensure the OPENAI_API_KEY is provided via a Kubernetes Secret named `stock-tracker-secrets`
+              # Ensure the OPENAI_API_KEY is provided via a Kubernetes Secret named `market-helm-secrets`
               env:
                 - name: OPENAI_API_KEY
                   valueFrom:
                     secretKeyRef:
-                      name: stock-tracker-secrets
+                      name: market-helm-secrets
                       key: OPENAI_API_KEY
               volumeMounts:
                 - name: data

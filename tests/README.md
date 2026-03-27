@@ -1,8 +1,8 @@
-# Stock Exchange Tracker - Tests
+# MarketHelm — tests
 
 ## Overview
 
-This directory contains unit tests for the Stock Exchange Tracker project. The test layout mirrors the project structure so that each source module has a corresponding test package.
+This directory contains unit tests for the MarketHelm project. The test layout mirrors the project structure so that each source module has a corresponding test package.
 
 ## Test Structure
 

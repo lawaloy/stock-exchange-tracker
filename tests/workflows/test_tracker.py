@@ -1,4 +1,4 @@
-"""Tests for stock tracker workflow."""
+"""Tests for MarketHelm tracker workflow."""
 
 import tempfile
 import shutil

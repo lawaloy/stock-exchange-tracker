@@ -172,7 +172,7 @@ The projection system is automatically integrated into the daily tracker:
 python main.py
 
 # Or via console script
-stock-tracker
+market-helm
 ```
 
 ### Programmatic Access
