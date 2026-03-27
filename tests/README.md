@@ -1,8 +1,8 @@
-# Stock Exchange Tracker - Tests
+# MarketHelm — tests
 
 ## Overview
 
-This directory contains unit tests for the Stock Exchange Tracker project. The test layout mirrors the project structure so that each source module has a corresponding test package.
+This directory contains unit tests for the MarketHelm project. The test layout mirrors the project structure so that each source module has a corresponding test package.
 
 ## Test Structure
 
@@ -36,6 +36,9 @@ tests/
 ├── workflows/               # mirrors src/workflows/
 │   ├── __init__.py
 │   └── test_tracker.py
+│
+├── alerts/                  # src/alerts/ notifiers + engine integration
+│   └── test_webhook_notifier.py
 │
 └── dashboard/               # mirrors dashboard/
     ├── __init__.py
@@ -110,8 +113,9 @@ python -m pytest tests/ --cov=src --cov-report=html
 | `src/analysis/projector.py` | Stock projections and recommendations |
 | `src/storage/data_storage.py` | Data persistence |
 | `src/workflows/tracker.py` | Workflow integration with mocked deps |
-| `dashboard/backend/api` | Market, summary, health endpoints |
-| `dashboard/backend/services/data_loader.py` | Data loading from CSV/JSON |
+| `src/alerts/notifiers/webhook_notifier.py` | Webhook URL resolution, POST payload |
+| `dashboard/backend/api` | Market, summary, health, history (incl. accuracy) |
+| `dashboard/backend/services/data_loader.py` | Data loading, projection accuracy computation |
 
 ## Writing New Tests
 
@@ -139,10 +143,12 @@ pip install pytest pytest-cov
 
 ## Next Priority
 
-**Missing tests (by module):**
+**Missing or light tests (by module):**
 
 1. `src/services/data_fetcher.py` – Stock data fetching
 2. `src/services/stock_screener.py` – Screening logic
 3. `src/services/index_fetcher.py` – Index constituent fetching
-4. `src/alerts/` – Alert engine, rules, storage
-5. Integration tests for full workflow (end-to-end)
+4. `src/alerts/alert_engine.py`, `alert_rules.py`, `alert_storage.py` – Beyond webhook notifier coverage
+5. Integration tests for full workflow (end-to-end with temp `data/`)
+
+**Roadmap:** [docs/PROJECT_STATUS.md](../docs/PROJECT_STATUS.md)

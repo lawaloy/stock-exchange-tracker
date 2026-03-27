@@ -1,5 +1,5 @@
 """
-Refresh API endpoints - Trigger stock tracker to fetch new data
+Refresh API endpoints — trigger the daily MarketHelm run to fetch new data.
 """
 from fastapi import APIRouter, HTTPException, BackgroundTasks
 from pydantic import BaseModel
@@ -39,26 +39,24 @@ class RefreshStatusResponse(BaseModel):
     progress: str | None
 
 
-def run_stock_tracker():
-    """Run the stock tracker in a separate process"""
+def run_daily_tracker():
+    """Run the MarketHelm CLI (`market-helm`) in a separate process."""
     global _refresh_process
     try:
         refresh_status["is_running"] = True
-        refresh_status["progress"] = "Starting stock tracker..."
+        refresh_status["progress"] = "Starting market-helm..."
         refresh_status["last_status"] = "running"
         _refresh_cancel_event.clear()
         
-        # Get the project root (3 levels up from this file)
+        # Repo checkout: run top-level main.py. Pip install: run same CLI as console_scripts.
         project_root = Path(__file__).parent.parent.parent.parent
         main_script = project_root / "main.py"
-        
-        if not main_script.exists():
-            refresh_status["last_status"] = "error"
-            refresh_status["progress"] = "Unable to start refresh."
-            refresh_status["is_running"] = False
-            return
-        
-        # Run the stock tracker (default to top 10 for faster refresh, minimum 10)
+        if main_script.is_file():
+            command = [sys.executable, str(main_script)]
+        else:
+            command = [sys.executable, "-m", "src.cli.commands"]
+
+        # Run market-helm (default to top 10 for faster refresh, minimum 10)
         top_n_value = os.getenv("REFRESH_TOP_N", "10")
         try:
             top_n = max(0, int(top_n_value))
@@ -66,8 +64,6 @@ def run_stock_tracker():
             top_n = 10
         if top_n > 0:
             top_n = max(10, top_n)  # At least 10 stocks when using limit
-
-        command = [sys.executable, str(main_script)]
         if top_n:
             command.extend(["--top-n", str(top_n)])
 
@@ -145,10 +141,10 @@ def run_stock_tracker():
 @router.post("/refresh", response_model=RefreshResponse)
 async def trigger_refresh(background_tasks: BackgroundTasks):
     """
-    Trigger the stock tracker to fetch fresh data
-    
+    Trigger a data refresh (daily run) to fetch fresh data.
+
     This will:
-    1. Run the stock tracker (main.py)
+    1. Run the tracker (`main.py` or `python -m src.cli.commands`)
     2. Fetch latest data from Finnhub API
     3. Generate new projections
     4. Save updated CSV/JSON files
@@ -176,10 +172,10 @@ async def trigger_refresh(background_tasks: BackgroundTasks):
         )
 
     refresh_status["last_status"] = "running"
-    refresh_status["progress"] = "Starting stock tracker..."
-    
+    refresh_status["progress"] = "Starting market-helm..."
+
     # Start refresh in background
-    thread = threading.Thread(target=run_stock_tracker, daemon=True)
+    thread = threading.Thread(target=run_daily_tracker, daemon=True)
     thread.start()
     
     return RefreshResponse(

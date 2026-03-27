@@ -1,7 +1,7 @@
 @echo off
 REM Windows batch script to start both backend and frontend
 
-echo Starting Stock Exchange Tracker Dashboard...
+echo Starting MarketHelm dashboard...
 echo.
 
 REM Start backend in a new window

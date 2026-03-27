@@ -68,6 +68,19 @@ jobs:
           print("Version set to", version)
           PY
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: dashboard/frontend/package-lock.json
+
+      - name: Build dashboard SPA (into dashboard/backend/static)
+        run: |
+          cd dashboard/frontend
+          npm ci
+          npm run build
+
       - name: Install build tools
         run: |
           python -m pip install --upgrade pip
@@ -92,7 +105,7 @@ jobs:
       id-token: write # Required for trusted publishing
     environment:
       name: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'pypi' }}
-      url: ${{ github.event_name == 'workflow_dispatch' && inputs.environment == 'testpypi' && 'https://test.pypi.org/project/stock-exchange-tracker/' || 'https://pypi.org/project/stock-exchange-tracker/' }}
+      url: ${{ github.event_name == 'workflow_dispatch' && inputs.environment == 'testpypi' && 'https://test.pypi.org/project/market-helm/' || 'https://pypi.org/project/market-helm/' }}
 
     steps:
       - name: Download artifacts

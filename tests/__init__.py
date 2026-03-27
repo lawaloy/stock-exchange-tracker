@@ -1,2 +1,2 @@
-"""Tests for Stock Exchange Tracker."""
+"""Tests for MarketHelm."""
 

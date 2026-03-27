@@ -1,5 +1,5 @@
 """
-Stock Exchange Tracker - AI Summarizer Module
+MarketHelm - AI Summarizer Module
 
 Uses OpenAI API to generate natural language summaries of market data.
 """

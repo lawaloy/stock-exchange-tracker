@@ -1,8 +1,8 @@
 """
-Stock Tracker Workflow - Core Business Logic
+MarketHelm workflow — core business logic.
 
-This module contains the core workflow orchestration for stock tracking.
-It's reusable across different interfaces (CLI, Web, API).
+Orchestrates screening, fetch, analysis, and storage.
+Reusable across CLI, web, and API.
 """
 
 from ..services.data_fetcher import StockDataFetcher
@@ -355,7 +355,7 @@ if __name__ == "__main__":
     """
     import json
     
-    print("Running Stock Tracker Workflow (programmatic mode)...")
+    print("Running MarketHelm workflow (programmatic mode)...")
     print("-" * 60)
     
     workflow = StockTrackerWorkflow()

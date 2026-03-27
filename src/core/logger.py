@@ -1,5 +1,5 @@
 """
-Stock Exchange Tracker - Logging Configuration
+MarketHelm - Logging Configuration
 
 Sets up logging with both console and file output, with different log levels.
 """
@@ -10,7 +10,29 @@ from pathlib import Path
 from datetime import datetime
 
 
-def setup_logger(name: str = "stock_tracker", log_dir: str = "logs") -> logging.Logger:
+def _rename_legacy_log_files(log_path: Path) -> None:
+    """Rename stock_tracker_*.log files left from older releases to market_helm_*.log."""
+    for old in sorted(log_path.glob("stock_tracker_*.log")):
+        if old.name.startswith("stock_tracker_errors_"):
+            continue
+        suffix = old.name.removeprefix("stock_tracker_")
+        new = log_path / f"market_helm_{suffix}"
+        if not new.exists():
+            try:
+                old.rename(new)
+            except OSError:
+                pass
+    for old in sorted(log_path.glob("stock_tracker_errors_*.log")):
+        suffix = old.name.removeprefix("stock_tracker_errors_")
+        new = log_path / f"market_helm_errors_{suffix}"
+        if not new.exists():
+            try:
+                old.rename(new)
+            except OSError:
+                pass
+
+
+def setup_logger(name: str = "market_helm", log_dir: str = "logs") -> logging.Logger:
     """
     Set up logger with console and file handlers.
     
@@ -24,7 +46,8 @@ def setup_logger(name: str = "stock_tracker", log_dir: str = "logs") -> logging.
     # Create logs directory if it doesn't exist
     log_path = Path(log_dir)
     log_path.mkdir(exist_ok=True)
-    
+    _rename_legacy_log_files(log_path)
+
     # Create logger
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)  # Capture all levels
@@ -49,14 +72,14 @@ def setup_logger(name: str = "stock_tracker", log_dir: str = "logs") -> logging.
     
     # File handler - DEBUG level and above (all logs)
     today = datetime.now().strftime('%Y-%m-%d')
-    log_file = log_path / f"stock_tracker_{today}.log"
+    log_file = log_path / f"market_helm_{today}.log"
     file_handler = logging.FileHandler(log_file, encoding='utf-8')
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(detailed_formatter)
     logger.addHandler(file_handler)
     
     # Error file handler - ERROR level and above
-    error_log_file = log_path / f"stock_tracker_errors_{today}.log"
+    error_log_file = log_path / f"market_helm_errors_{today}.log"
     error_handler = logging.FileHandler(error_log_file, encoding='utf-8')
     error_handler.setLevel(logging.ERROR)
     error_handler.setFormatter(detailed_formatter)

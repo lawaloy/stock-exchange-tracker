@@ -1,4 +1,4 @@
-name: Daily Stock Tracker
+name: Daily MarketHelm
 
 permissions:
   contents: read
@@ -25,10 +25,10 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -e .
 
-      - name: Run stock tracker
+      - name: Run market-helm
         env:
           FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           # Try console script, fallback to python shim
-          stock-tracker || python main.py
+          market-helm || python main.py

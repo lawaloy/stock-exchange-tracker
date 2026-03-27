@@ -1,6 +1,8 @@
-# Stock Exchange Tracker
+# MarketHelm
 
-A daily stock market tracking tool that automatically identifies promising stocks, fetches market data, and generates insights. Perfect for traders, analysts, or anyone interested in tracking market trends.
+A stock market **monitoring** and analysis tool (CLI + web dashboard) that screens indices, fetches data, and projects short-term moves—aimed at growing toward suggestions, alerts, and (later) execution. Perfect for traders and analysts building a daily workflow.
+
+**Direction:** The long-term goal is a product that **monitors** markets, **suggests** buys/sells, and can **eventually execute** via broker APIs—with room to grow from the installable **CLI** toward a **multi-user** app. Read the full picture in [docs/PROJECT_STATUS.md](docs/PROJECT_STATUS.md#product-vision).
 
 ## What Does It Do?
 
@@ -15,23 +17,21 @@ This tool automatically:
 
 **Run time**: ~4 minutes per day on the free tier
 
-### NEW: Web Dashboard (v0.3.0)
+### Web dashboard
 
-**Visual, interactive dashboard** is now available! Explore stock data, projections, and recommendations in a modern React interface.
+**Visual, interactive UI** — same **`pip install market-helm`** as the CLI. The package includes the FastAPI server and a built React UI (no Node.js needed to use it).
 
-**Quick Start:**
+**Quick start (after install and `.env` with `FINNHUB_API_KEY`):**
 
 ```bash
-# Start backend
-cd dashboard/backend && python main.py
-
-# Start frontend (in another terminal)
-cd dashboard/frontend && npm install && npm run dev
+market-helm-web
 ```
 
-Visit `http://localhost:3000` to see it in action!
+Open **http://localhost:8000** — API docs are at **/docs**.
 
-See [Dashboard README](dashboard/README.md) for full setup instructions.
+**Develop the React UI** (Vite dev server on port 3000, hot reload): see [dashboard/README.md](dashboard/README.md#development-clone-hot-reload).
+
+**Hosting:** API + static app, **`DATA_DIR`**, secrets — [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 ---
 
@@ -42,34 +42,43 @@ See [Dashboard README](dashboard/README.md) for full setup instructions.
 - Python 3.12 or higher ([Download here](https://www.python.org/downloads/))
 - A free Finnhub API key ([Sign up here](https://finnhub.io/register) - takes 2 minutes)
 
-### Step 1: Get the Code
+### Step 1: Install
+
+Create a virtual environment (recommended), then activate it:
 
 ```bash
-git clone https://github.com/lawaloy/stock-exchange-tracker.git
-cd stock-exchange-tracker
-```
-
-### Step 2: Install
-
-```bash
-# Create a virtual environment
 python -m venv .venv
-
-# Activate it
 # Windows PowerShell:
 .venv\Scripts\Activate.ps1
 # Windows CMD:
 .venv\Scripts\activate
 # Mac/Linux:
 source .venv/bin/activate
-
-# Install the tracker
-pip install -e .
 ```
 
-### Step 3: Add Your API Key
+**Install the package—pick one:**
 
-Create a file named `.env` in the project folder:
+- **From PyPI** (recommended — includes CLI and dashboard):
+
+  ```bash
+  pip install market-helm
+  ```
+
+  - Package page: [pypi.org/project/market-helm](https://pypi.org/project/market-helm/)
+  - Optional OpenAI-powered summaries: `pip install 'market-helm[ai]'`
+- **From source** (clone the repo for development, or to **rebuild** the dashboard UI from `dashboard/frontend`):
+
+  ```bash
+  git clone https://github.com/lawaloy/market-helm.git
+  cd market-helm
+  pip install -e .
+  ```
+
+The same package also installs the **web dashboard** (API + pre-built SPA). After install, run **`market-helm-web`** and open **http://localhost:8000** (set `DATA_DIR` or use the default data folder; see [dashboard/README.md](dashboard/README.md) and [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)). To develop the React UI with hot reload, use Node in `dashboard/frontend` as described in the dashboard README.
+
+### Step 2: Add Your API Key
+
+Create a file named `.env` in the folder where you will run the tool (project root if you cloned, or any working directory if you installed from PyPI):
 
 ```text
 FINNHUB_API_KEY=your-api-key-here
@@ -77,11 +86,23 @@ FINNHUB_API_KEY=your-api-key-here
 
 *(Get your free key from [finnhub.io/register](https://finnhub.io/register))*
 
-### Step 4: Run It
+### Step 3: Run It
 
-```bash
-python main.py
-```
+The install adds:
+
+- **`market-helm`** — run the daily tracker (writes CSV/JSON under `data/` or `DATA_DIR`).
+
+  ```bash
+  market-helm
+  ```
+
+- **`market-helm-web`** — web UI + API (after `pip install`, open http://localhost:8000).
+
+  ```bash
+  market-helm-web
+  ```
+
+If you cloned the repository, you can also run **`python main.py`** from the project root (same CLI as `market-helm`).
 
 That's it! The tool will:
 
@@ -98,7 +119,7 @@ That's it! The tool will:
 
 - **`data/daily_data_YYYY-MM-DD.csv`**: Full stock data (prices, volume, changes)
 - **`data/summary_YYYY-MM-DD.json`**: Analysis summary (gainers, losers, statistics)
-- **`logs/stock_tracker_YYYY-MM-DD.log`**: Detailed execution logs
+- **`logs/market_helm_YYYY-MM-DD.log`**: Detailed execution logs
 
 ### Console Output
 
@@ -223,22 +244,22 @@ Edit `config/filters.json` to adjust what qualifies as a "good" stock:
 ### Docker
 
 ```bash
-docker build -t stock-tracker:latest .
-docker run --rm -e FINNHUB_API_KEY=your-key stock-tracker:latest
-# Or: docker run --rm --env-file .env stock-tracker:latest
+docker build -t market-helm:latest .
+docker run --rm -e FINNHUB_API_KEY=your-key market-helm:latest
+# Or: docker run --rm --env-file .env market-helm:latest
 ```
 
 **Schedule daily runs**: Use cron (Linux/Mac), Task Scheduler (Windows), or systemd. Example cron:
 
 ```bash
-0 9 * * * docker run --rm -e FINNHUB_API_KEY=$(cat /path/to/key) stock-tracker:latest >> /var/log/stock-tracker.log 2>&1
+0 9 * * * docker run --rm -e FINNHUB_API_KEY=$(cat /path/to/key) market-helm:latest >> /var/log/market-helm.log 2>&1
 ```
 
 ### Docker Compose
 
 ```yaml
 services:
-  stock-tracker:
+  market-helm:
     build: .
     environment:
       - FINNHUB_API_KEY=${FINNHUB_API_KEY}
@@ -250,10 +271,10 @@ services:
 
 ### Kubernetes
 
-Use `k8s/stock-tracker-cronjob.yaml` as a CronJob. Create secrets first:
+Use `k8s/market-helm-cronjob.yaml` as a CronJob. Create secrets first:
 
 ```bash
-kubectl create secret generic stock-tracker-secrets \
+kubectl create secret generic market-helm-secrets \
   --from-literal=FINNHUB_API_KEY=your-key \
   --from-literal=OPENAI_API_KEY=your-key
 ```
@@ -275,7 +296,7 @@ AWS ECS + EventBridge, GCP Cloud Run + Scheduler, Azure Container Instances + Lo
 ### Project Structure
 
 ```text
-stock-exchange-tracker/
+market-helm/
 ├── main.py                     # Entry point (run this!)
 ├── src/
 │   ├── __init__.py             # Package initialization
@@ -344,7 +365,7 @@ stock-exchange-tracker/
 
 - Check internet connection
 - Verify Finnhub API key is valid
-- Check `logs/stock_tracker_errors_*.log` for details
+- Check `logs/market_helm_errors_*.log` for details
 
 ### Logs not showing?
 
@@ -448,11 +469,14 @@ A: Yes. All data stays on your machine. API keys never leave your environment.
 
 We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
-**Next Priority (by impact):**
+**Project status (what shipped, what’s next, gaps):** [docs/PROJECT_STATUS.md](docs/PROJECT_STATUS.md)
 
-1. **Alert & notification system** – Price/screening/recommendation alerts, SNS/email/webhook (design ready; see [ALERTING_DESIGN.md](docs/ALERTING_DESIGN.md))
-2. **Historical trends** – Multi-day data aggregation, projection accuracy tracking, trend charts
-3. Additional exchanges, screening filters (RSI/MACD), enhanced AI summaries
+**Next priorities (summary):**
+
+1. **Alerts** — Extend beyond log + webhook: **email (SMTP)**, optional Slack-formatted payloads, **CLI** commands; full vision in [ALERTING_DESIGN.md](docs/ALERTING_DESIGN.md).
+2. **Projection accuracy** — Deeper metrics (e.g. by confidence), business-calendar targets as needed.
+3. **Dashboard** — Watchlist, code splitting, shortcuts (see [dashboard/README.md](dashboard/README.md)).
+4. **Broader product** — More exchanges/filters, richer AI summaries, sector/portfolio ideas (see CONTRIBUTING).
 
 **Quick Start:**
 
@@ -500,7 +524,7 @@ This architecture minimizes API calls while maximizing data quality.
 
 ## Do you need any help?
 
-- Check `logs/stock_tracker_errors_*.log` for error details
+- Check `logs/market_helm_errors_*.log` for error details
 - Review the Troubleshooting section above
 - Open an issue on GitHub with log excerpts
 - Check Finnhub API status if data fetch fails

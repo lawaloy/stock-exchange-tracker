@@ -44,6 +44,25 @@ class TestCoreLogger(unittest.TestCase):
         logger2 = setup_logger(name="test_logger", log_dir=self.test_log_dir)
         self.assertEqual(logger1.name, logger2.name)
 
+    def test_renames_legacy_stock_tracker_log_files(self):
+        """Legacy stock_tracker_*.log files are renamed to market_helm_*.log."""
+        from datetime import datetime
+
+        today = datetime.now().strftime("%Y-%m-%d")
+        log_dir = Path(self.test_log_dir)
+        legacy = log_dir / f"stock_tracker_{today}.log"
+        legacy_err = log_dir / f"stock_tracker_errors_{today}.log"
+        legacy.write_text("old main\n", encoding="utf-8")
+        legacy_err.write_text("old err\n", encoding="utf-8")
+
+        setup_logger(log_dir=self.test_log_dir)
+
+        self.assertFalse(legacy.exists())
+        self.assertFalse(legacy_err.exists())
+        self.assertTrue((log_dir / f"market_helm_{today}.log").exists())
+        self.assertTrue((log_dir / f"market_helm_errors_{today}.log").exists())
+        self.assertIn("old main", (log_dir / f"market_helm_{today}.log").read_text(encoding="utf-8"))
+
 
 if __name__ == '__main__':
     unittest.main()

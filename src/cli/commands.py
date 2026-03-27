@@ -1,8 +1,5 @@
 """
-Stock Tracker CLI - Command-Line Interface
-
-This module provides the CLI presentation layer for the Stock Exchange Tracker.
-It uses the core workflow and formats output for console display.
+MarketHelm CLI — command-line interface for the daily tracker workflow.
 """
 
 from ..workflows.tracker import StockTrackerWorkflow
@@ -144,10 +141,10 @@ def display_results(result: dict):
 
 
 def main():
-    """CLI entry point for stock tracker."""
+    """CLI entry point for MarketHelm (see also console script `market-helm`)."""
     import argparse
     
-    parser = argparse.ArgumentParser(description='Stock Exchange Tracker - Day Trading Optimized')
+    parser = argparse.ArgumentParser(description='MarketHelm — daily market run (day-trading oriented)')
     parser.add_argument('--top-n', type=int, default=None, 
                        help='Limit to top N stocks by volume (e.g. --top-n 50 for day trading)')
     parser.add_argument('--no-screener', action='store_true',
@@ -158,7 +155,7 @@ def main():
     args = parser.parse_args()
     
     logger.info("=" * 60)
-    logger.info("Stock Exchange Tracker - Daily Data Collection")
+    logger.info("MarketHelm - Daily Data Collection")
     if args.top_n:
         logger.info(f"Day Trading Mode: Top {args.top_n} stocks by volume")
     logger.info("=" * 60)

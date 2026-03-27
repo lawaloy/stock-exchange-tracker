@@ -1,5 +1,5 @@
 """
-Stock Exchange Tracker - Data Fetcher Module
+MarketHelm - Data Fetcher Module
 
 Fetches daily stock data using official APIs (Finnhub).
 Professional implementation with proper rate limiting and error handling.

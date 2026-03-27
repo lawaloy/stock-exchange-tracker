@@ -1,5 +1,5 @@
 """
-Stock Exchange Tracker - Index Fetcher Module
+MarketHelm - Index Fetcher Module
 
 Fetches all stocks from major market indices using Python packages.
 Uses pytickersymbols package for reliable, maintained index lists.
