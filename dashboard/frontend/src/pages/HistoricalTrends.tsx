@@ -12,10 +12,12 @@ import {
   AreaChart,
   Area,
   Legend,
+  BarChart,
+  Bar,
 } from 'recharts';
 import { historyApi, stocksApi } from '../services/api';
 import { coerceTooltipNumber, formatPercentage, formatDate, formatPrice, getCompanyName } from '../utils/formatters';
-import type { DailySummaryPoint, HistoricalPoint } from '../types';
+import type { DailySummaryPoint, HistoricalPoint, ProjectionAccuracyResponse } from '../types';
 
 const DAY_OPTIONS = [7, 14, 30, 90];
 
@@ -35,6 +37,8 @@ const HistoricalTrends: React.FC<HistoricalTrendsProps> = ({ refreshKey = 0 }) =
   const [selectedSymbol, setSelectedSymbol] = useState<string>('');
   const [stockHistory, setStockHistory] = useState<HistoricalPoint[]>([]);
   const [stockLoading, setStockLoading] = useState(false);
+  const [accuracy, setAccuracy] = useState<ProjectionAccuracyResponse | null>(null);
+  const [accuracyLoading, setAccuracyLoading] = useState(true);
   const isInitialMount = useRef(true);
 
   // Names come from summary API (saved at write time in projections/daily data)
@@ -49,6 +53,21 @@ const HistoricalTrends: React.FC<HistoricalTrendsProps> = ({ refreshKey = 0 }) =
   useEffect(() => {
     fetchData(false);
   }, [days]);
+
+  useEffect(() => {
+    const loadAccuracy = async () => {
+      setAccuracyLoading(true);
+      try {
+        const res = await historyApi.getAccuracy(days);
+        setAccuracy(res.data);
+      } catch {
+        setAccuracy(null);
+      } finally {
+        setAccuracyLoading(false);
+      }
+    };
+    loadAccuracy();
+  }, [days, refreshKey]);
 
   useEffect(() => {
     if (isInitialMount.current) return;
@@ -259,6 +278,103 @@ const HistoricalTrends: React.FC<HistoricalTrendsProps> = ({ refreshKey = 0 }) =
           </ResponsiveContainer>
         </div>
           </div>
+        </section>
+
+        {/* Projection vs actual (target date) */}
+        <section>
+          <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-2">Projection accuracy</h3>
+          <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">
+            For each past run, compares the projected 5-day target price to the first available closing price on or after
+            the target date. Lower mean error is better. Needs enough history (daily + projections) after targets mature.
+          </p>
+          {accuracyLoading ? (
+            <div className="flex justify-center py-12">
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500" />
+            </div>
+          ) : !accuracy || accuracy.summary.sampleCount === 0 ? (
+            <div className="card p-6 text-sm text-slate-600 dark:text-slate-400">
+              No scored projections yet for this range. Keep running Fetch New so target dates can pass and actual
+              prices exist.
+            </div>
+          ) : (
+            <div className="space-y-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="card p-6">
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Samples (projections scored)</p>
+                  <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+                    {accuracy.summary.sampleCount}
+                  </p>
+                </div>
+                <div className="card p-6">
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Mean absolute error (price)</p>
+                  <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+                    {accuracy.summary.meanAbsErrorPct != null
+                      ? `${accuracy.summary.meanAbsErrorPct.toFixed(2)}%`
+                      : '—'}
+                  </p>
+                </div>
+              </div>
+              {Object.keys(accuracy.summary.byRecommendation).length > 0 && (
+                <div className="card p-6">
+                  <h4 className="font-medium text-slate-800 dark:text-slate-100 mb-4">Error by recommendation</h4>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Mean absolute % error vs target price.</p>
+                  <ResponsiveContainer width="100%" height={280}>
+                    <BarChart
+                      data={Object.entries(accuracy.summary.byRecommendation).map(([rec, v]) => ({
+                        recommendation: rec,
+                        meanAbsErrorPct: v.meanAbsErrorPct ?? 0,
+                      }))}
+                      margin={{ top: 8, right: 8, left: 8, bottom: 48 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="recommendation" tick={{ fontSize: 11 }} interval={0} angle={-25} textAnchor="end" height={60} />
+                      <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => `${v}%`} />
+                      <Tooltip
+                        formatter={(value) => {
+                          const n = coerceTooltipNumber(value);
+                          return n != null ? [`${n.toFixed(2)}%`, 'Mean error'] : ['', ''];
+                        }}
+                      />
+                      <Bar dataKey="meanAbsErrorPct" fill="#6366F1" name="Mean error %" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+              {accuracy.samples.length > 0 && (
+                <div className="card p-6 overflow-x-auto">
+                  <h4 className="font-medium text-slate-800 dark:text-slate-100 mb-4">Recent scores</h4>
+                  <table className="min-w-full text-sm text-left">
+                    <thead>
+                      <tr className="border-b border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400">
+                        <th className="py-2 pr-4">Symbol</th>
+                        <th className="py-2 pr-4">Run</th>
+                        <th className="py-2 pr-4">Target</th>
+                        <th className="py-2 pr-4">Actual @</th>
+                        <th className="py-2 pr-4">Pred</th>
+                        <th className="py-2 pr-4">Close</th>
+                        <th className="py-2 pr-4">|Err|%</th>
+                        <th className="py-2">Rec</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {accuracy.samples.map((row) => (
+                        <tr key={`${row.symbol}-${row.runDate}-${row.targetDate}`} className="border-b border-slate-100 dark:border-slate-700">
+                          <td className="py-2 pr-4 font-medium">{row.symbol}</td>
+                          <td className="py-2 pr-4 whitespace-nowrap">{formatDate(row.runDate)}</td>
+                          <td className="py-2 pr-4 whitespace-nowrap">{formatDate(row.targetDate)}</td>
+                          <td className="py-2 pr-4 whitespace-nowrap">{formatDate(row.actualDate)}</td>
+                          <td className="py-2 pr-4">{formatPrice(row.predicted)}</td>
+                          <td className="py-2 pr-4">{formatPrice(row.actual)}</td>
+                          <td className="py-2 pr-4">{row.absErrorPct.toFixed(2)}%</td>
+                          <td className="py-2">{row.recommendation}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
         </section>
 
         {/* Per-company view */}

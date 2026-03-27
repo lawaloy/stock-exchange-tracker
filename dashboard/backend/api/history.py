@@ -3,7 +3,7 @@ Historical trends API endpoints
 """
 import logging
 from fastapi import APIRouter, HTTPException, Query
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -61,6 +61,34 @@ class HistoricalSummaryResponse(BaseModel):
     lastDate: str
     symbols: List[str] = []
     names: dict = {}
+
+
+class AccuracySample(BaseModel):
+    """One evaluated projection vs actual close."""
+
+    symbol: str
+    runDate: str
+    targetDate: str
+    actualDate: str
+    predicted: float
+    actual: float
+    absErrorPct: float
+    recommendation: str
+
+
+class AccuracySummary(BaseModel):
+    """Rollups for projection accuracy."""
+
+    sampleCount: int
+    meanAbsErrorPct: Optional[float] = None
+    byRecommendation: dict = {}
+
+
+class ProjectionAccuracyResponse(BaseModel):
+    """Projection accuracy over the lookback window."""
+
+    summary: AccuracySummary
+    samples: List[AccuracySample]
 
 
 @router.get("/dates")
@@ -182,6 +210,29 @@ async def get_historical_summary(
             "names": symbol_names,
         }
 
+    except HTTPException:
+        raise
+    except ValueError:
+        raise HTTPException(status_code=404, detail="No data available.")
+    except Exception:
+        raise HTTPException(status_code=500, detail="Something went wrong. Please try again.")
+
+
+@router.get("/accuracy", response_model=ProjectionAccuracyResponse)
+async def get_projection_accuracy(
+    days: int = Query(90, ge=7, le=365, description="Look back this many days of projection runs"),
+):
+    """
+    Compare each run's target_mid to the first available actual close on/after the target date.
+    Requires overlapping daily_data and projections files across time.
+    """
+    try:
+        loader = get_data_loader()
+        raw = loader.compute_projection_accuracy(days)
+        return ProjectionAccuracyResponse(
+            summary=AccuracySummary(**raw["summary"]),
+            samples=[AccuracySample(**s) for s in raw["samples"]],
+        )
     except HTTPException:
         raise
     except ValueError:
