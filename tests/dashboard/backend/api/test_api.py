@@ -155,6 +155,43 @@ class TestSummaryAPI:
         assert len(data["summary"]) > 0
 
 
+class TestHistoryAccuracyAPI:
+    """Projection accuracy endpoint."""
+
+    def test_accuracy_returns_summary(self, client, mock_data_loader):
+        """GET /api/history/accuracy returns summary and samples."""
+        mock_data_loader.compute_projection_accuracy = MagicMock(
+            return_value={
+                "summary": {
+                    "sampleCount": 1,
+                    "meanAbsErrorPct": 3.0,
+                    "byRecommendation": {
+                        "HOLD": {"count": 1, "meanAbsErrorPct": 3.0},
+                    },
+                },
+                "samples": [
+                    {
+                        "symbol": "AAPL",
+                        "runDate": "2026-01-10",
+                        "targetDate": "2026-01-15",
+                        "actualDate": "2026-01-15",
+                        "predicted": 100.0,
+                        "actual": 103.0,
+                        "absErrorPct": 3.0,
+                        "recommendation": "HOLD",
+                    }
+                ],
+            }
+        )
+        r = client.get("/api/history/accuracy", params={"days": 30})
+        assert r.status_code == 200
+        data = r.json()
+        assert data["summary"]["sampleCount"] == 1
+        assert data["summary"]["meanAbsErrorPct"] == 3.0
+        assert len(data["samples"]) == 1
+        assert data["samples"][0]["symbol"] == "AAPL"
+
+
 class TestMarketAPIErrors:
     """Test API error handling."""
 
