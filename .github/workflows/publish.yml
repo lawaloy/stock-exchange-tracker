@@ -75,11 +75,6 @@ jobs:
           cache: "npm"
           cache-dependency-path: dashboard/frontend/package-lock.json
 
-      # Match CI (.github/workflows/python-app.yml) so npm ci / lockfile validation
-      # behaves the same on PRs and on release builds.
-      - name: Pin npm (same as CI)
-        run: npm install --global npm@11.6.2
-
       - name: Build dashboard SPA (into dashboard/backend/static)
         run: |
           cd dashboard/frontend

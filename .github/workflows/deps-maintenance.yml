@@ -37,9 +37,6 @@ jobs:
           cache: npm
           cache-dependency-path: dashboard/frontend/package-lock.json
 
-      - name: Pin npm version
-        run: npm install --global npm@11.6.2
-
       - name: Install dashboard frontend dependencies
         working-directory: dashboard/frontend
         run: npm ci

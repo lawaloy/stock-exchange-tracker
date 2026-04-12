@@ -106,10 +106,6 @@ jobs:
         with:
           node-version: 20
 
-      - name: Pin npm to CI version
-        if: steps.pr.outputs.trusted == 'true' && steps.pr.outputs.changed-workspaces != '[]'
-        run: npm install --global npm@11.6.2
-
       - name: Sync lockfile with package.json (matches npm ci)
         if: steps.pr.outputs.trusted == 'true' && steps.pr.outputs.changed-workspaces != '[]'
         env:
