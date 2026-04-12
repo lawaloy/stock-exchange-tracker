@@ -11,14 +11,31 @@
 # Ensure your GitHub App installation has permission to create releases / write
 # contents on this repo (same app as Dependabot auto-merge is fine if it already
 # has contents: write).
+#
+# UI notes (GitHub platform — not configurable in this file):
+# - "Use workflow from" always appears for workflow_dispatch; it **must** be **main**:
+#   the job fails immediately otherwise (so you never run a stale copy of this workflow).
+# - All inputs are always visible; there is no conditional "show tag only for manual".
+# - To cancel: close the dialog without clicking **Run workflow** (there is no
+#   per-workflow Cancel button next to Run workflow).
 
 name: Create Release
 
 on:
   workflow_dispatch:
     inputs:
-      bump:
-        description: "Auto from latest tag on origin (leave as patch for routine releases)"
+      bump_type:
+        description: |
+          How the next tag is chosen. The workflow reads the latest **`vMAJOR.MINOR.PATCH`** on **origin** (except **manual**).
+
+          | Value | Effect (if latest tag were **v0.2.9**) |
+          |-------|----------------------------------------|
+          | **patch** | **v0.2.10** (increment PATCH) |
+          | **minor** | **v0.3.0** (increment MINOR, PATCH → 0) |
+          | **major** | **v1.0.0** (increment MAJOR, rest → 0) |
+          | **manual** | Use **Release tag** below (e.g. **v0.10.0**) |
+
+          Routine releases: **patch**.
         type: choice
         default: patch
         options:
@@ -27,14 +44,14 @@ on:
           - major
           - manual
       tag:
-        description: "Only when bump is manual — e.g. v0.3.0 or 0.3.0 (ignored otherwise)."
+        description: |
+          **Use only when bump type is `manual`.** Ignored for patch / minor / major.
+          Format: **`v0.10.0`** or **`0.10.0`** (semver `MAJOR.MINOR.PATCH` only).
+
+          For **patch** / **minor** / **major**, leave this **empty** (whitespace only is OK).
         required: false
         type: string
         default: ""
-      confirm:
-        description: "Confirm — creates the next release (default: patch bump) and triggers PyPI"
-        required: true
-        type: boolean
 
 permissions:
   contents: read
@@ -49,11 +66,28 @@ jobs:
     permissions:
       contents: read
     steps:
-      - name: Require confirmation
-        if: ${{ inputs.confirm != true }}
+      - name: Require dispatch from main
         run: |
-          echo "Set the Confirm checkbox to true to create this GitHub release and trigger PyPI publish."
-          exit 1
+          if [ "${GITHUB_REF}" != "refs/heads/main" ]; then
+            echo '::error::Set "Use workflow from" to branch **main** before Run workflow.'
+            echo "Current GITHUB_REF=${GITHUB_REF}"
+            exit 1
+          fi
+
+      - name: Require empty Release tag unless manual bump
+        env:
+          BUMP: ${{ inputs.bump_type }}
+          RAW_TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          if [ "$BUMP" = "manual" ]; then
+            exit 0
+          fi
+          if printf '%s' "$RAW_TAG" | grep -q '[[:graph:]]'; then
+            echo '::error::Release tag must be empty when bump type is not **manual**.'
+            echo 'Clear the Release tag field, or set bump type to **manual** to use a custom tag.'
+            exit 1
+          fi
 
       - uses: actions/checkout@v4
         with:
@@ -63,7 +97,7 @@ jobs:
       - name: Resolve release tag
         id: tag
         env:
-          BUMP: ${{ inputs.bump }}
+          BUMP: ${{ inputs.bump_type }}
           RAW_TAG: ${{ inputs.tag }}
         run: |
           set -euo pipefail
@@ -81,7 +115,7 @@ jobs:
           if [ "$BUMP" = "manual" ]; then
             t="${RAW_TAG#v}"
             if [ -z "$t" ]; then
-              echo 'For bump "manual", set the tag input (e.g. v0.3.0).'
+              echo 'For bump type "manual", set the Release tag input (e.g. v0.10.0).'
               exit 1
             fi
             if ! echo "$t" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
@@ -102,7 +136,7 @@ jobs:
                 tail -n1
             )"
             if [ -z "$latest" ]; then
-              echo "No prior vMAJOR.MINOR.PATCH tags found on origin. Use bump manual once."
+              echo "No prior vMAJOR.MINOR.PATCH tags found on origin. Use bump type manual once."
               exit 1
             fi
             major="${latest%%.*}"
