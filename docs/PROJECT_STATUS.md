@@ -29,7 +29,7 @@ This file is the **single place** for “where we are,” “what’s next,” a
 | Web dashboard | **Active** | FastAPI + React; Historical Trends, projection accuracy, market views |
 | Alerts | **Partial** | `AlertEngine`, `config/alerts.json`, **log** + **HTTP webhook** notifiers; no email/SNS/CLI UI yet |
 | Historical / accuracy | **Partial** | Multi-day charts + **`GET /api/history/accuracy`** + UI on Historical Trends; limited “portfolio-level” metrics |
-| Tests | **Good coverage** core + dashboard + alerts webhook; gaps in some `services/` modules |
+| Tests | **Good coverage** | Core, dashboard, alerts webhook; gaps in some **src/services** modules |
 | Hosting / deploy | **Documented** | See [DEPLOYMENT.md](DEPLOYMENT.md) — `DATA_DIR`, env vars, persistence; **no** automated execution in repo yet |
 
 ---
