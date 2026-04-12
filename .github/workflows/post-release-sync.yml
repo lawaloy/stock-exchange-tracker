@@ -1,6 +1,9 @@
 # After "Publish to PyPI" succeeds for a GitHub Release, open a PR to align main
 # (setup.cfg, version_sync targets, CHANGELOG stub). Separate from publish.yml so
 # Publish only ships artifacts; this workflow runs when that workflow completes.
+#
+# Same auth pattern as deps-maintenance.yml: app token first, then checkout with
+# that token so git push uses the installation (not GITHUB_TOKEN / github-actions[bot]).
 
 name: Post-release sync to main
 
@@ -15,7 +18,8 @@ on:
       - completed
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
   actions: read
 
 jobs:
@@ -24,10 +28,18 @@ jobs:
     if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'release'
     runs-on: ubuntu-latest
     steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
       - uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Download release tag from Publish workflow
         uses: actions/download-artifact@v4
@@ -82,14 +94,6 @@ jobs:
             echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Generate GitHub App token
-        if: steps.align.outputs.skip != 'true'
-        id: app-token
-        uses: actions/create-github-app-token@v2
-        with:
-          app-id: ${{ vars.APP_ID }}
-          private-key: ${{ secrets.APP_PRIVATE_KEY }}
-
       - name: Open pull request to main
         if: steps.align.outputs.skip != 'true'
         env:
@@ -109,10 +113,6 @@ jobs:
             exit 0
           fi
           git commit -m "chore: sync repo version and changelog for ${VERSION} (post-release ${TAG})"
-          # workflow_run gives a read-only GITHUB_TOKEN; git's helper may prefer it over an
-          # embedded URL token. Use the app token via gh so push uses the installation.
-          gh auth setup-git
-          git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
           git push -u origin "$BRANCH" --force-with-lease
           if [ "$(gh pr list --base main --head "$BRANCH" --state open --json number --jq length)" -eq 0 ]; then
             gh pr create --base main --head "$BRANCH" \
