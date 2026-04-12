@@ -1,0 +1,122 @@
+# After "Publish to PyPI" succeeds for a GitHub Release, open a PR to align main
+# (setup.cfg, version_sync targets, CHANGELOG stub). Separate from publish.yml so
+# Publish only ships artifacts; this workflow runs when that workflow completes.
+
+name: Post-release sync to main
+
+on:
+  workflow_run:
+    workflows:
+      - Publish to PyPI
+    types:
+      - completed
+    branches:
+      - main
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  sync_repo_version:
+    name: Post-release version sync PR
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'release'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Download release tag from Publish workflow
+        uses: actions/download-artifact@v4
+        with:
+          name: post-release-tag
+          path: .post-release
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Apply released version and sync tracked files
+        id: align
+        run: |
+          set -euo pipefail
+          TAG="$(tr -d '[:space:]' < .post-release/tag.txt)"
+          if ! echo "$TAG" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "Unexpected tag in artifact (want vMAJOR.MINOR.PATCH): $TAG"
+            exit 1
+          fi
+          export TAG
+          python - <<'PY'
+          import configparser, os, re, sys
+
+          tag = os.environ["TAG"]
+          version = tag.lstrip("v")
+          if not re.fullmatch(r"\d+\.\d+\.\d+", version):
+              print("Invalid version from tag", tag, file=sys.stderr)
+              sys.exit(1)
+
+          cfg = configparser.ConfigParser()
+          cfg.read("setup.cfg", encoding="utf-8")
+          cfg["metadata"]["version"] = version
+          with open("setup.cfg", "w", encoding="utf-8") as f:
+              cfg.write(f)
+          print("Version set to", version, "from tag", tag)
+          PY
+          python scripts/version_sync.py sync
+          python scripts/version_sync.py check
+          VERSION="${TAG#v}"
+          python scripts/post_release_changelog.py \
+            --version "$VERSION" \
+            --date "$(date -u +%Y-%m-%d)"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          if git diff --quiet HEAD; then
+            echo "Working tree matches $(git rev-parse HEAD); no PR needed."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Generate GitHub App token
+        if: steps.align.outputs.skip != 'true'
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Open pull request to main
+        if: steps.align.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          TAG: ${{ steps.align.outputs.tag }}
+        run: |
+          set -euo pipefail
+          VERSION="${TAG#v}"
+          BRANCH="chore/post-release-sync-${VERSION}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin "$BRANCH" 2>/dev/null || true
+          git checkout -B "$BRANCH"
+          git add setup.cfg dashboard/frontend/package.json dashboard/frontend/package-lock.json dashboard/backend/main.py CHANGELOG.md
+          if git diff --cached --quiet; then
+            echo "No staged changes; exiting."
+            exit 0
+          fi
+          git commit -m "chore: sync repo version and changelog for ${VERSION} (post-release ${TAG})"
+          # workflow_run gives a read-only GITHUB_TOKEN; git's helper may prefer it over an
+          # embedded URL token. Use the app token via gh so push uses the installation.
+          gh auth setup-git
+          git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          git push -u origin "$BRANCH" --force-with-lease
+          if [ "$(gh pr list --base main --head "$BRANCH" --state open --json number --jq length)" -eq 0 ]; then
+            gh pr create --base main --head "$BRANCH" \
+              --title "chore: sync repo version to ${VERSION} (${TAG})" \
+              --body "Automated PR after **${TAG}** was published to PyPI. Updates \`setup.cfg\` and synced files (\`scripts/version_sync.py\`), and adds a **[\`${VERSION}\`]** entry to \`CHANGELOG.md\` when one is not already present (\`scripts/post_release_changelog.py\`). Triggered after **Publish to PyPI** completes successfully. If you retried with a different tag, merge the PR that matches the version on PyPI; edit the new changelog section for user-facing notes if needed."
+          else
+            echo "Open PR already exists for ${BRANCH}; branch updated."
+          fi
