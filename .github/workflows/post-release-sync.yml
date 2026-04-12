@@ -103,8 +103,8 @@ jobs:
           set -euo pipefail
           VERSION="${TAG#v}"
           BRANCH="chore/post-release-sync-${VERSION}"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "market-helm[bot]"
+          git config user.email "market-helm[bot]@users.noreply.github.com"
           git fetch origin "$BRANCH" 2>/dev/null || true
           git checkout -B "$BRANCH"
           git add setup.cfg dashboard/frontend/package.json dashboard/frontend/package-lock.json dashboard/backend/main.py CHANGELOG.md
