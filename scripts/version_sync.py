@@ -2,8 +2,19 @@
 """
 Single source of truth: setup.cfg [metadata] version.
 
-  python scripts/version_sync.py check   # exit 1 if dashboard files disagree
-  python scripts/version_sync.py sync    # rewrite them from setup.cfg
+  python scripts/version_sync.py check   # read-only: exit 1 if files disagree (CI)
+  python scripts/version_sync.py sync    # write: copy setup.cfg → dashboard files
+
+When this runs
+--------------
+* **Locally** — after you change ``setup.cfg`` ``version``, run ``sync`` and commit.
+* **CI** (``.github/workflows/python-app.yml``) — ``check`` on every PR so drift fails the build.
+* **Publish to PyPI** (``.github/workflows/publish.yml``) — ``check`` in the *test* job; ``sync`` in the
+  *build* job **after** the release tag is applied to ``setup.cfg`` on the runner (so the SPA build
+  matches the tag). Nothing is committed from CI; ``sync`` only fixes the checkout used for the wheel.
+
+``check`` never modifies files. Only ``sync`` writes. Broken inputs (missing ``setup.cfg``, bad JSON,
+missing markers in ``main.py``) print a short message to stderr and exit **2** (not a Python traceback).
 """
 from __future__ import annotations
 
@@ -48,7 +59,8 @@ def read_lock_root_versions(path: Path) -> tuple[str, str]:
     return top, inner
 
 
-def read_main_py_versions(path: Path) -> tuple[str, str]:
+def read_main_py_versions(path: Path) -> tuple[str | None, str | None]:
+    """Return (fastapi_version, root_json_version) or (None, None) if markers are missing."""
     text = path.read_text(encoding="utf-8")
     fastapi = re.search(
         r'title="MarketHelm API",\s*\n\s*description="[^"]+",\s*\n\s*version="(\d+\.\d+\.\d+)"',
@@ -59,10 +71,7 @@ def read_main_py_versions(path: Path) -> tuple[str, str]:
         text,
     )
     if not fastapi or not root_json:
-        raise ValueError(
-            f"Could not find version markers in {path}. "
-            "Expected FastAPI(...) MarketHelm API block and root() JSON version."
-        )
+        return None, None
     return fastapi.group(1), root_json.group(1)
 
 
@@ -84,10 +93,16 @@ def check(root: Path) -> list[str]:
 
     main_py = root / "dashboard" / "backend" / "main.py"
     fa, rj = read_main_py_versions(main_py)
-    if fa != want:
-        errors.append(f"{main_py.relative_to(root)} FastAPI version: {fa!r} != {want!r}")
-    if rj != want:
-        errors.append(f"{main_py.relative_to(root)} root JSON version: {rj!r} != {want!r}")
+    if fa is None or rj is None:
+        errors.append(
+            f"{main_py.relative_to(root)}: could not read version markers "
+            '(expected FastAPI "MarketHelm API" block and root() JSON). Run sync after fixing the file.'
+        )
+    else:
+        if fa != want:
+            errors.append(f"{main_py.relative_to(root)} FastAPI version: {fa!r} != {want!r}")
+        if rj != want:
+            errors.append(f"{main_py.relative_to(root)} root JSON version: {rj!r} != {want!r}")
 
     return errors
 
@@ -106,7 +121,10 @@ def sync_package_lock(path: Path, version: str) -> None:
     path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8", newline="\n")
 
 
-def sync_main_py(path: Path, version: str) -> None:
+def sync_main_py(path: Path, version: str) -> str | None:
+    """
+    Update version strings in main.py. Returns None on success, or an error message.
+    """
     text = path.read_text(encoding="utf-8")
     new_text, n1 = re.subn(
         r'(title="MarketHelm API",\s*\n\s*description="[^"]+",\s*\n\s*version=")(\d+\.\d+\.\d+)(")',
@@ -115,7 +133,10 @@ def sync_main_py(path: Path, version: str) -> None:
         count=1,
     )
     if n1 != 1:
-        raise ValueError(f"Expected 1 FastAPI version replace in {path}, got {n1}")
+        return (
+            f"Could not find the FastAPI 'MarketHelm API' version= line in {path} "
+            f"(expected exactly one match, got {n1}). Edit the file manually, then run sync again."
+        )
     new_text, n2 = re.subn(
         r'("service": "MarketHelm API",\s*\n\s*"version": ")(\d+\.\d+\.\d+)(")',
         rf"\g<1>{version}\3",
@@ -123,8 +144,12 @@ def sync_main_py(path: Path, version: str) -> None:
         count=1,
     )
     if n2 != 1:
-        raise ValueError(f"Expected 1 root JSON version replace in {path}, got {n2}")
+        return (
+            f"Could not find the root JSON version next to 'MarketHelm API' in {path} "
+            f"(expected exactly one match, got {n2}). Edit the file manually, then run sync again."
+        )
     path.write_text(new_text, encoding="utf-8", newline="\n")
+    return None
 
 
 def cmd_check(root: Path) -> int:
@@ -133,7 +158,7 @@ def cmd_check(root: Path) -> int:
         print("Version mismatch (canonical: setup.cfg [metadata] version):\n", file=sys.stderr)
         for e in errors:
             print(f"  - {e}", file=sys.stderr)
-        print("\nRun: python scripts/version_sync.py sync", file=sys.stderr)
+        print("\nTo fix locally: python scripts/version_sync.py sync", file=sys.stderr)
         return 1
     print(f"OK: all tracked files match setup.cfg version {read_setup_version(root)!r}")
     return 0
@@ -143,22 +168,38 @@ def cmd_sync(root: Path) -> int:
     version = read_setup_version(root)
     sync_package_json(root / "dashboard" / "frontend" / "package.json", version)
     sync_package_lock(root / "dashboard" / "frontend" / "package-lock.json", version)
-    sync_main_py(root / "dashboard" / "backend" / "main.py", version)
+    err = sync_main_py(root / "dashboard" / "backend" / "main.py", version)
+    if err:
+        print(f"sync: {err}", file=sys.stderr)
+        return 2
     print(f"Synced dashboard files to {version!r} from setup.cfg")
     return 0
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     sub = parser.add_subparsers(dest="cmd", required=True)
-    sub.add_parser("check", help="Verify dashboard versions match setup.cfg")
-    sub.add_parser("sync", help="Write setup.cfg version into dashboard files")
+    sub.add_parser("check", help="Read-only: fail if dashboard files disagree with setup.cfg")
+    sub.add_parser("sync", help="Write: copy setup.cfg version into dashboard files")
     args = parser.parse_args()
     root = repo_root()
-    if args.cmd == "check":
-        return cmd_check(root)
-    if args.cmd == "sync":
-        return cmd_sync(root)
+    try:
+        if args.cmd == "check":
+            return cmd_check(root)
+        if args.cmd == "sync":
+            return cmd_sync(root)
+    except FileNotFoundError as e:
+        print(f"version_sync: {e}", file=sys.stderr)
+        return 2
+    except ValueError as e:
+        print(f"version_sync: {e}", file=sys.stderr)
+        return 2
+    except json.JSONDecodeError as e:
+        print(f"version_sync: invalid JSON ({e})", file=sys.stderr)
+        return 2
     return 1
 
 

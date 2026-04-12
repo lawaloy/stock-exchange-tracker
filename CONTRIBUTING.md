@@ -50,7 +50,7 @@ python scripts/version_sync.py sync
 python scripts/version_sync.py check
 ```
 
-The **CI** job runs **`check`** on every PR. **Publish to PyPI** sets `setup.cfg` from the **release tag** on the runner, then runs **`sync`** before building the SPA so the built wheel and UI metadata match.
+The **CI** job runs **`check`** on every PR (read-only; it does **not** auto-fix so the PR stays an honest diff). **Publish to PyPI** sets `setup.cfg` from the **release tag** on the runner, then runs **`sync`** in the build job before **`npm ci`** so the wheel and UI metadata match that tag (still not committed to `main` from CI).
 
 ## Development Workflow
 
