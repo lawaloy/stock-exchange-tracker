@@ -50,7 +50,7 @@ python scripts/version_sync.py sync
 python scripts/version_sync.py check
 ```
 
-The **CI** job runs **`check`** on every PR (read-only; it does **not** auto-fix so the PR stays an honest diff). **Publish to PyPI** sets `setup.cfg` from the **release tag** on the runner, then runs **`sync`** in the build job before **`npm ci`** so the wheel and UI metadata match that tag (still not committed to `main` from CI).
+The **CI** job runs **`check`** on every PR (read-only; it does **not** auto-fix so the PR stays an honest diff). **Publish to PyPI** sets `setup.cfg` from the **release tag** on the runner, then runs **`sync`** in the build job before **`npm ci`** so the wheel and UI metadata match that tag (still not committed to `main` from CI). After a successful release publish, **Post-release sync to main** (separate workflow) may open a PR to align `main` with that tag.
 
 ## Development Workflow
 
