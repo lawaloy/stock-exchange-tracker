@@ -47,6 +47,8 @@ on:
         description: |
           **Use only when bump type is `manual`.** Ignored for patch / minor / major.
           Format: **`v0.10.0`** or **`0.10.0`** (semver `MAJOR.MINOR.PATCH` only).
+
+          For **patch** / **minor** / **major**, leave this **empty** (whitespace only is OK).
         required: false
         type: string
         default: ""
@@ -69,6 +71,21 @@ jobs:
           if [ "${GITHUB_REF}" != "refs/heads/main" ]; then
             echo '::error::Set "Use workflow from" to branch **main** before Run workflow.'
             echo "Current GITHUB_REF=${GITHUB_REF}"
+            exit 1
+          fi
+
+      - name: Require empty Release tag unless manual bump
+        env:
+          BUMP: ${{ inputs.bump_type }}
+          RAW_TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          if [ "$BUMP" = "manual" ]; then
+            exit 0
+          fi
+          if printf '%s' "$RAW_TAG" | grep -q '[[:graph:]]'; then
+            echo '::error::Release tag must be empty when bump type is not **manual**.'
+            echo 'Clear the Release tag field, or set bump type to **manual** to use a custom tag.'
             exit 1
           fi
 
