@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+**Published releases** on GitHub use tags in the **`v0.2.*`** series (for example **`v0.2.7`**). The `setup.cfg` / package version tracks that line (next: **`0.2.8`**). Section headings **`[0.3.0]`** and newer below are dated milestones on `main`; they are not separate `v0.3`+ tags unless noted otherwise.
+
 ## [Unreleased]
 
 ### Planned (not yet shipped)
@@ -14,11 +16,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Real-time:** WebSocket or streaming-style updates (batch/daily today).
 - **Product:** User authentication, multi-user data isolation.
 
-## [0.5.1] - 2026-04-11
+## [0.2.8] - 2026-04-11
 
 ### Documentation
 
 - Synced markdown with shipped behavior on `main`: historical trends UI, projection accuracy API (`GET /api/history/accuracy`), partial alerting (log + webhook), and corrected “planned vs shipped” language across `CHANGELOG`, `dashboard/FEATURES.md`, `docs/DASHBOARD_DESIGN.md`, `docs/ALERTING_DESIGN.md`, `docs/STOCK_PROJECTIONS.md`, and `docs/PROJECT_STATUS.md`.
+- Aligned package metadata with the **`v0.2.*`** release tag line (follows **`v0.2.7`**).
 
 ## [0.5.0] - 2026-03-26
 
