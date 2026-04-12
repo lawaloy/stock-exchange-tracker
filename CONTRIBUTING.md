@@ -28,6 +28,30 @@ Thank you for your interest in contributing! This document provides guidelines f
    pip install pytest pytest-cov  # For testing
    ```
 
+## Package version (single source of truth)
+
+The **canonical** release line for this repo is **`setup.cfg`** → **`[metadata]`** → **`version`** (e.g. `0.2.8`).
+
+These must stay aligned for new contributors and CI:
+
+- `dashboard/frontend/package.json` (`version`)
+- `dashboard/frontend/package-lock.json` (root + `packages[""]` `version`)
+- `dashboard/backend/main.py` (FastAPI `version=` and the root JSON `"version"` next to `"MarketHelm API"`)
+
+**After you change `setup.cfg` version**, run:
+
+```bash
+python scripts/version_sync.py sync
+```
+
+**Check without writing:**
+
+```bash
+python scripts/version_sync.py check
+```
+
+The **CI** job runs **`check`** on every PR (read-only; it does **not** auto-fix so the PR stays an honest diff). **Publish to PyPI** sets `setup.cfg` from the **release tag** on the runner, then runs **`sync`** in the build job before **`npm ci`** so the wheel and UI metadata match that tag (still not committed to `main` from CI).
+
 ## Development Workflow
 
 ### 1. Create a Branch
