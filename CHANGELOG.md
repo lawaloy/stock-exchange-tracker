@@ -5,7 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-**Published releases** on GitHub use tags in the **`v0.2.*`** series (for example **`v0.2.9`**). The `setup.cfg` / package version tracks that line. Section headings **`[0.3.0]`** and newer below are dated milestones on `main`; they are not separate `v0.3`+ tags unless noted otherwise.
+**PyPI and Git today:** releases use tags **`v0.2.x`** (for example **`v0.2.9`**). The canonical Python version in **`setup.cfg`** matches that line; dashboard copies stay in sync via **`scripts/version_sync.py`**.
+
+**Ordering:** sections below are **newest first by release date**. Headings like **`[0.5.0]`** / **`[0.4.0]`** describe **historical** distribution and branding changes (e.g. **`market-desk`** → **`market-helm`**); they are not parallel “current” PyPI lines.
 
 ## [Unreleased]
 
